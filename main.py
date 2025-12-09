@@ -58,14 +58,13 @@ Examples:
     parser.add_argument(
         "-g", "--graph",
         action="store_true",
-        default=True,
-        help="Generate graph visualizations (default: True)"
+        help="Generate graph visualizations"
     )
     
     parser.add_argument(
         "--no-graph",
         action="store_true",
-        help="Disable graph generation"
+        help="Disable graph generation (overrides --graph)"
     )
     
     parser.add_argument(
@@ -164,7 +163,9 @@ async def run_swarm(args):
         print(f"\n✅ Profile exported to: {json_path}")
     
     # Generate graph visualizations
-    if args.graph and not args.no_graph:
+    # Generate by default unless --no-graph is specified
+    should_generate_graph = args.graph or (not args.no_graph and not args.graph)
+    if should_generate_graph:
         print("\n📈 Generating graph visualizations...")
         graph_files = orchestrator.generate_graph(str(output_dir))
         

@@ -4,6 +4,7 @@ Agent for gathering economic history and financial information.
 import logging
 from typing import Dict, Any, List
 import re
+from urllib.parse import quote_plus
 from .base_agent import BaseAgent
 
 logger = logging.getLogger(__name__)
@@ -41,9 +42,10 @@ class EconomicHistoryAgent(BaseAgent):
         ]
         
         # For demonstration, we'll search fictional character wealth databases
+        # Use proper URL encoding for safety
         wealth_urls = [
-            f"https://www.therichest.com/tag/{character_name.lower().replace(' ', '-')}/",
-            f"https://fictionhorizon.com/?s={character_name.replace(' ', '+')}+wealth",
+            f"https://www.therichest.com/tag/{quote_plus(character_name.lower())}/",
+            f"https://fictionhorizon.com/?s={quote_plus(character_name)}+wealth",
         ]
         
         for url in wealth_urls:
@@ -121,5 +123,5 @@ class EconomicHistoryAgent(BaseAgent):
             
             base_value = float(value_str)
             return base_value * multiplier
-        except:
+        except (ValueError, TypeError) as e:
             return 0.0

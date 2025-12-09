@@ -10,10 +10,6 @@ from .agents import CharacterInfoAgent, EconomicHistoryAgent, KnowledgeDomainAge
 from .graph import MultiversalGraphGenerator
 from .models import CharacterProfile, MultiversalIdentity, KnowledgeDomain, EconomicEvent
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
 logger = logging.getLogger(__name__)
 
 

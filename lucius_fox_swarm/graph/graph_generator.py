@@ -95,7 +95,8 @@ class MultiversalGraphGenerator:
         # Use hierarchical layout
         try:
             pos = nx.spring_layout(self.graph, k=2, iterations=50, seed=42)
-        except:
+        except Exception as e:
+            logger.warning(f"Spring layout failed, using circular layout: {e}")
             pos = nx.circular_layout(self.graph)
         
         # Define colors for different node types

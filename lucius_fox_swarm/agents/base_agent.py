@@ -23,7 +23,7 @@ class BaseAgent(ABC):
         self.session = aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=30),
             headers={
-                'User-Agent': 'Mozilla/5.0 (compatible; LuciusFoxSwarm/1.0; +https://github.com/oldmangrizzz/Lucius-Fox-digital-person-Earth-1218)'
+                'User-Agent': 'Mozilla/5.0 (compatible; MultiversalSwarmBot/1.0)'
             }
         )
         return self
