@@ -5,6 +5,7 @@ import logging
 from typing import Dict, Any, List
 import asyncio
 import re
+from bs4 import BeautifulSoup
 from .base_agent import BaseAgent
 
 logger = logging.getLogger(__name__)
