@@ -36,6 +36,7 @@ class CharacterInfoAgent(BaseAgent):
         ]
         self.max_insights = 3
         self.min_snippet_length = 40
+        self._pattern_cache: Dict[str, Pattern] = {}
     
     async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Gather basic character information."""
@@ -62,7 +63,10 @@ class CharacterInfoAgent(BaseAgent):
         # Community/social sources (fan theories, headcanon, discussions)
         community_tasks = []
         encoded_query = quote_plus(character_name)
-        name_pattern = re.compile(rf"\b{re.escape(character_name)}\b", re.IGNORECASE)
+        name_pattern = self._pattern_cache.get(character_name)
+        if not name_pattern:
+            name_pattern = re.compile(rf"\b{re.escape(character_name)}\b", re.IGNORECASE)
+            self._pattern_cache[character_name] = name_pattern
         for name, template in self.community_sources:
             url = template.format(query=encoded_query)
             community_tasks.append(self._search_community_source(url, name, name_pattern))
@@ -154,7 +158,11 @@ class CharacterInfoAgent(BaseAgent):
         insights: List[str] = []
 
         # Collect a handful of relevant snippets mentioning the character
-        for snippet in soup.find_all(["p", "div", "span", "li"]):
+        candidate_nodes = soup.select("p, li, div[class*='content'], div[class*='comment'], span[class*='content']")
+        if len(candidate_nodes) > self.max_insights * 20:
+            candidate_nodes = candidate_nodes[: self.max_insights * 20]
+
+        for snippet in candidate_nodes:
             if len(insights) >= self.max_insights:
                 break
             text = snippet.get_text(" ", strip=True)
