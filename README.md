@@ -114,6 +114,9 @@ The framework searches across multiple sources including:
 - Star Wars Fandom
 - Lord of the Rings Wiki
 - Various character wealth databases
+- Reddit discussions and fan theory subreddits
+- Twitter/X (via open mirrors such as Nitter)
+- Fanfiction and community forums for headcanon and hypotheses
 
 ## Output Files 📁
 

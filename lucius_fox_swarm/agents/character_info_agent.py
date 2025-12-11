@@ -5,6 +5,7 @@ import logging
 from typing import Dict, Any, List
 import asyncio
 import re
+from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 from .base_agent import BaseAgent
 
@@ -25,6 +26,14 @@ class CharacterInfoAgent(BaseAgent):
             "https://starwars.fandom.com/wiki/",
             "https://lotr.fandom.com/wiki/",
         ]
+        # Community and social sources for hypotheses and fan canon
+        self.community_sources = [
+            ("reddit", "https://old.reddit.com/search?q={query}"),
+            ("fandom_forums", "https://www.reddit.com/r/FanTheories/search?q={query}&restrict_sr=1"),
+            ("twitter_alt", "https://nitter.net/search?f=tweets&q={query}"),
+            ("fanfiction", "https://www.fanfiction.net/search/?keywords={query}"),
+            ("archiveofourown", "https://archiveofourown.org/works/search?work_search%5Bquery%5D={query}")
+        ]
     
     async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Gather basic character information."""
@@ -36,7 +45,8 @@ class CharacterInfoAgent(BaseAgent):
             "multiversal_identities": [],
             "occupations": [],
             "first_appearances": [],
-            "sources": []
+            "sources": [],
+            "community_insights": []
         }
         
         # Search across multiple wiki sources
@@ -46,8 +56,16 @@ class CharacterInfoAgent(BaseAgent):
             formatted_name = character_name.replace(" ", "_")
             url = f"{source_base}{formatted_name}"
             tasks.append(self._search_source(url, source_base))
+
+        # Community/social sources (fan theories, headcanon, discussions)
+        community_tasks = []
+        encoded_query = quote_plus(character_name)
+        for name, template in self.community_sources:
+            url = template.format(query=encoded_query)
+            community_tasks.append(self._search_community_source(url, name, character_name))
         
         search_results = await asyncio.gather(*tasks, return_exceptions=True)
+        community_results = await asyncio.gather(*community_tasks, return_exceptions=True)
         
         # Aggregate results
         for result in search_results:
@@ -64,6 +82,13 @@ class CharacterInfoAgent(BaseAgent):
                         "name": result.get("name", character_name),
                         "source": result.get("source")
                     })
+                results["sources"].append(result.get("source"))
+
+        # Aggregate community/headcanon sources
+        for result in community_results:
+            if isinstance(result, dict) and result.get("found"):
+                if result.get("insights"):
+                    results["community_insights"].extend(result["insights"])
                 results["sources"].append(result.get("source"))
         
         # Deduplicate
@@ -114,6 +139,32 @@ class CharacterInfoAgent(BaseAgent):
                         result["first_appearance"] = data_text
         
         return result
+
+    async def _search_community_source(self, url: str, label: str, character_name: str) -> Dict[str, Any]:
+        """Search community-driven sources (Reddit, social mirrors, forums) for headcanon and hypotheses."""
+        html = await self.fetch_url(url)
+        if not html:
+            return {"found": False, "source": url}
+
+        soup = self.parse_html(html)
+        insights: List[str] = []
+
+        # Collect a handful of relevant snippets mentioning the character
+        for snippet in soup.find_all(["p", "div", "span", "li"]):
+            text = snippet.get_text(" ", strip=True)
+            if not text:
+                continue
+            if character_name.lower() in text.lower():
+                insights.append(text)
+            if len(insights) >= 3:
+                break
+
+        return {
+            "found": True,
+            "source": url,
+            "community": label,
+            "insights": insights
+        }
     
     def _extract_universe(self, source_base: str, soup: BeautifulSoup) -> str:
         """Extract universe designation from the wiki."""
