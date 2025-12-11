@@ -160,11 +160,14 @@ class CharacterInfoAgent(BaseAgent):
         insights: List[str] = []
 
         # Collect a handful of relevant snippets mentioning the character
-        for snippet in soup.descendants:
+        candidate_nodes = soup.find_all(
+            ["p", "li", "div", "span"],
+            limit=self.max_insights * self.max_candidate_multiplier
+        )
+
+        for snippet in candidate_nodes:
             if len(insights) >= self.max_insights:
                 break
-            if not getattr(snippet, "name", None) in {"p", "li", "div", "span"}:
-                continue
             if snippet.name in {"div", "span"}:
                 classes = snippet.get("class", [])
                 if classes and not any("content" in cls or "comment" in cls for cls in classes):
