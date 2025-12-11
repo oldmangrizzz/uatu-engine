@@ -39,28 +39,28 @@ pip install -r requirements.txt
 Gather multiversal history for a fictional character:
 
 ```bash
-python main.py "Tony Stark"
+python main.py --subject "Tony Stark"
 ```
 
 ### Advanced Options
 
 ```bash
 # Specify custom output directory
-python main.py "Bruce Wayne" --output ./batman_data
+python main.py --subject "Bruce Wayne" --output ./batman_data
 
 # Export profile to JSON and generate graphs
-python main.py "Doctor Strange" --export --graph
+python main.py --subject "Doctor Strange" --export --graph
 
 # Enable verbose logging
-python main.py "Hermione Granger" --verbose
+python main.py --subject "Hermione Granger" --verbose
 
 # Disable graph generation
-python main.py "Luke Skywalker" --no-graph
+python main.py --subject "Luke Skywalker" --no-graph
 ```
 
 ### Command-Line Arguments
 
-- `character_name` - Name of the fictional character to research (required)
+- `--subject` - Name of the fictional character to research (required)
 - `-o, --output` - Output directory for generated files (default: ./output)
 - `-e, --export` - Export character profile to JSON file
 - `-g, --graph` - Generate graph visualizations (enabled by default)
@@ -156,7 +156,7 @@ Lucius-Fox-digital-person-Earth-1218/
 ├── main.py                           # CLI entry point
 ├── requirements.txt                  # Python dependencies
 ├── README.md                        # This file
-├── lucius_fox_swarm/               # Main package
+├── uatu_genesis_engine/             # Main package (Uatu Bridge core)
 │   ├── __init__.py
 │   ├── orchestrator.py             # Swarm orchestrator
 │   ├── models/                     # Data models
@@ -178,10 +178,11 @@ Lucius-Fox-digital-person-Earth-1218/
 ### Example 1: Tony Stark / Iron Man
 
 ```bash
-python main.py "Tony Stark" --export --graph
+python main.py --subject "Tony Stark" --export --graph
 ```
 
 Output includes:
+- Soul Anchor YAML distilled from invariants/variants
 - Engineering expertise mapped to real-world fields
 - Stark Industries business history
 - Wealth estimate (billions of USD)
@@ -190,7 +191,7 @@ Output includes:
 ### Example 2: Hermione Granger
 
 ```bash
-python main.py "Hermione Granger" --output ./hermione_data
+python main.py --subject "Hermione Granger" --output ./hermione_data
 ```
 
 Output includes:

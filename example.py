@@ -7,7 +7,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from lucius_fox_swarm import MultiversalSwarmOrchestrator
+from uatu_genesis_engine import MultiversalSwarmOrchestrator
 
 # Configure logging
 logging.basicConfig(
@@ -58,11 +58,14 @@ async def demo():
             char_safe = character_name.replace(" ", "_").lower()
             json_path = output_dir / f"{char_safe}_profile.json"
             orchestrator.export_profile(str(json_path))
+            anchor_path = output_dir / f"{char_safe}_soul_anchor.yaml"
+            orchestrator.export_soul_anchor(str(anchor_path))
             
             # Generate graph
             graph_files = orchestrator.generate_graph(str(output_dir))
             
             print(f"   📁 Profile: {json_path}")
+            print(f"   🔗 Soul Anchor: {anchor_path}")
             if graph_files:
                 print(f"   📊 Graph: {graph_files['graph_image']}")
             

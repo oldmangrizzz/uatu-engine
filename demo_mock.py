@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-from lucius_fox_swarm import (
+from uatu_genesis_engine import (
     MultiversalSwarmOrchestrator,
     CharacterProfile,
     MultiversalIdentity,
@@ -228,12 +228,15 @@ async def demo_with_mock_data():
         json.dump(profile_dict, f, indent=2)
     
     print(f"\n✅ Complete profile exported to: {json_path}")
+
+    orchestrator = MultiversalSwarmOrchestrator()
+    orchestrator.character_profile = profile
+    anchor_path = output_dir / "tony_stark_soul_anchor.yaml"
+    orchestrator.export_soul_anchor(str(anchor_path))
+    print(f"🔗 Soul Anchor emitted to: {anchor_path}")
     
     # Generate graph
     print("\n📈 Generating graph visualization...")
-    orchestrator = MultiversalSwarmOrchestrator()
-    orchestrator.character_profile = profile
-    
     graph_files = orchestrator.generate_graph(str(output_dir))
     if graph_files:
         print(f"✅ Graph visualization saved to: {graph_files['graph_image']}")

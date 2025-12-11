@@ -43,7 +43,21 @@ class KnowledgeDomainAgent(BaseAgent):
             "telepathy": {
                 "earth_1218_equivalent": "psychology, neuroscience, cognitive science",
                 "categories": ["science", "psychology"]
+            },
+            "repulsor": {
+                "earth_1218_equivalent": "High-Density Muon Propulsion / Ion Thruster Theoreticals",
+                "categories": ["technology", "physics"]
+            },
+            "vibranium": {
+                "earth_1218_equivalent": "Advanced Material Science / Impact-Absorbing Lattice Structures",
+                "categories": ["materials_science", "physics"]
             }
+        }
+        self.tech_equivalents = {
+            "repulsor": "High-Density Muon Propulsion / Ion Thruster Theoreticals",
+            "arc reactor": "Compact Fusion Torus / Palladium-Free Energy Systems",
+            "vibranium": "Advanced Material Science / Impact-Absorbing Lattice Structures",
+            "web-shooter": "Non-Newtonian Polymer Dynamics / High-Tensile Microfluidics",
         }
     
     async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -139,6 +153,19 @@ class KnowledgeDomainAgent(BaseAgent):
                 "original_context": "magical abilities",
                 "proficiency": "advanced"
             })
+
+        tech_keywords = {
+            "repulsor": "repulsor technology",
+            "arc reactor": "arc reactor technology",
+            "vibranium": "vibranium-based equipment",
+        }
+        for keyword, context in tech_keywords.items():
+            if keyword in text:
+                domains.append({
+                    "category": "technology",
+                    "original_context": context,
+                    "proficiency": "advanced"
+                })
         
         return domains
     
@@ -151,11 +178,21 @@ class KnowledgeDomainAgent(BaseAgent):
             
             # Check if we have a mapping rule
             earth_equivalent = None
-            if category in self.domain_mappings:
-                earth_equivalent = self.domain_mappings[category]["earth_1218_equivalent"]
-            else:
-                # Default mapping - keep as is if already realistic
-                earth_equivalent = category.replace("_", " ")
+            search_text = f"{category} {domain.get('original_context', '')}".lower()
+
+            # Direct technology keyword translation (repulsor tech, vibranium, etc.)
+            for keyword, translation in self.tech_equivalents.items():
+                if keyword in search_text:
+                    earth_equivalent = translation
+                    category = "technology"
+                    break
+
+            if earth_equivalent is None:
+                if category in self.domain_mappings:
+                    earth_equivalent = self.domain_mappings[category]["earth_1218_equivalent"]
+                else:
+                    # Default mapping - keep as is if already realistic
+                    earth_equivalent = category.replace("_", " ")
             
             mapped_domains.append({
                 "category": category,
