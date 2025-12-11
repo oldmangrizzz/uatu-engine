@@ -36,6 +36,7 @@ class CharacterInfoAgent(BaseAgent):
         ]
         self.max_insights = 3
         self.min_snippet_length = 40
+        self.max_candidate_multiplier = 20
         self._pattern_cache: Dict[str, Pattern] = {}
     
     async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -65,7 +66,8 @@ class CharacterInfoAgent(BaseAgent):
         encoded_query = quote_plus(character_name)
         name_pattern = self._pattern_cache.get(character_name)
         if not name_pattern:
-            name_pattern = re.compile(rf"\b{re.escape(character_name)}\b", re.IGNORECASE)
+            pattern_text = rf"(?<!\w){re.escape(character_name)}(?!\w)"
+            name_pattern = re.compile(pattern_text, re.IGNORECASE)
             self._pattern_cache[character_name] = name_pattern
         for name, template in self.community_sources:
             url = template.format(query=encoded_query)
@@ -159,8 +161,8 @@ class CharacterInfoAgent(BaseAgent):
 
         # Collect a handful of relevant snippets mentioning the character
         candidate_nodes = soup.select("p, li, div[class*='content'], div[class*='comment'], span[class*='content']")
-        if len(candidate_nodes) > self.max_insights * 20:
-            candidate_nodes = candidate_nodes[: self.max_insights * 20]
+        if len(candidate_nodes) > self.max_insights * self.max_candidate_multiplier:
+            candidate_nodes = candidate_nodes[: self.max_insights * self.max_candidate_multiplier]
 
         for snippet in candidate_nodes:
             if len(insights) >= self.max_insights:
