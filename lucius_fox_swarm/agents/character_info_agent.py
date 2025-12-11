@@ -66,7 +66,7 @@ class CharacterInfoAgent(BaseAgent):
         encoded_query = quote_plus(character_name)
         name_pattern = self._pattern_cache.get(character_name)
         if not name_pattern:
-            pattern_text = rf"(?<!\w){re.escape(character_name)}(?!\w)"
+            pattern_text = re.escape(character_name)
             name_pattern = re.compile(pattern_text, re.IGNORECASE)
             self._pattern_cache[character_name] = name_pattern
         for name, template in self.community_sources:
@@ -160,13 +160,15 @@ class CharacterInfoAgent(BaseAgent):
         insights: List[str] = []
 
         # Collect a handful of relevant snippets mentioning the character
-        candidate_nodes = soup.select("p, li, div[class*='content'], div[class*='comment'], span[class*='content']")
-        if len(candidate_nodes) > self.max_insights * self.max_candidate_multiplier:
-            candidate_nodes = candidate_nodes[: self.max_insights * self.max_candidate_multiplier]
-
-        for snippet in candidate_nodes:
+        for snippet in soup.descendants:
             if len(insights) >= self.max_insights:
                 break
+            if not getattr(snippet, "name", None) in {"p", "li", "div", "span"}:
+                continue
+            if snippet.name in {"div", "span"}:
+                classes = snippet.get("class", [])
+                if classes and not any("content" in cls or "comment" in cls for cls in classes):
+                    continue
             text = snippet.get_text(" ", strip=True)
             if not text or len(text) < self.min_snippet_length:
                 continue
