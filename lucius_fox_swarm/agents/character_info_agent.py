@@ -2,7 +2,7 @@
 Agent for gathering character information from various wikis and databases.
 """
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Pattern
 import asyncio
 import re
 from urllib.parse import quote_plus
@@ -61,9 +61,10 @@ class CharacterInfoAgent(BaseAgent):
         # Community/social sources (fan theories, headcanon, discussions)
         community_tasks = []
         encoded_query = quote_plus(character_name)
+        name_pattern = re.compile(rf"\b{re.escape(character_name)}\b", re.IGNORECASE)
         for name, template in self.community_sources:
             url = template.format(query=encoded_query)
-            community_tasks.append(self._search_community_source(url, name, character_name))
+            community_tasks.append(self._search_community_source(url, name, name_pattern))
         
         search_results = await asyncio.gather(*tasks, return_exceptions=True)
         community_results = await asyncio.gather(*community_tasks, return_exceptions=True)
@@ -142,7 +143,7 @@ class CharacterInfoAgent(BaseAgent):
         
         return result
 
-    async def _search_community_source(self, url: str, label: str, character_name: str) -> Dict[str, Any]:
+    async def _search_community_source(self, url: str, label: str, name_pattern: Pattern[str]) -> Dict[str, Any]:
         """Search community-driven sources (Reddit, social mirrors, forums) for headcanon and hypotheses."""
         html = await self.fetch_url(url)
         if not html:
@@ -150,10 +151,9 @@ class CharacterInfoAgent(BaseAgent):
 
         soup = self.parse_html(html)
         insights: List[str] = []
-        name_pattern = re.compile(rf"\b{re.escape(character_name)}\b", re.IGNORECASE)
 
         # Collect a handful of relevant snippets mentioning the character
-        for snippet in soup.find_all(["p", "div", "span", "li"]):
+        for snippet in soup.find_all(["p", "div", "span", "li"], limit=self.max_insights * 10):
             text = snippet.get_text(" ", strip=True)
             if not text or len(text) < 40:
                 continue
