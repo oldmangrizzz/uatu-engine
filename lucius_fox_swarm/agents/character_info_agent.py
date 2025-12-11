@@ -35,6 +35,7 @@ class CharacterInfoAgent(BaseAgent):
             ("archiveofourown", "https://archiveofourown.org/works/search?work_search%5Bquery%5D={query}")
         ]
         self.max_insights = 3
+        self.min_snippet_length = 40
     
     async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Gather basic character information."""
@@ -153,14 +154,14 @@ class CharacterInfoAgent(BaseAgent):
         insights: List[str] = []
 
         # Collect a handful of relevant snippets mentioning the character
-        for snippet in soup.find_all(["p", "div", "span", "li"], limit=self.max_insights * 10):
+        for snippet in soup.find_all(["p", "div", "span", "li"]):
+            if len(insights) >= self.max_insights:
+                break
             text = snippet.get_text(" ", strip=True)
-            if not text or len(text) < 40:
+            if not text or len(text) < self.min_snippet_length:
                 continue
             if name_pattern.search(text):
                 insights.append(text)
-            if len(insights) >= self.max_insights:
-                break
 
         return {
             "found": len(insights) > 0,
