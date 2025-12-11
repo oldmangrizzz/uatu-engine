@@ -34,6 +34,7 @@ class CharacterInfoAgent(BaseAgent):
             ("fanfiction", "https://www.fanfiction.net/search/?keywords={query}"),
             ("archiveofourown", "https://archiveofourown.org/works/search?work_search%5Bquery%5D={query}")
         ]
+        self.max_insights = 3
     
     async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Gather basic character information."""
@@ -94,6 +95,7 @@ class CharacterInfoAgent(BaseAgent):
         # Deduplicate
         results["aliases"] = list(set(results["aliases"]))
         results["occupations"] = list(set(results["occupations"]))
+        results["sources"] = list(set(results["sources"]))
         
         logger.info(f"Found {len(results['sources'])} sources for {character_name}")
         return results
@@ -148,7 +150,7 @@ class CharacterInfoAgent(BaseAgent):
 
         soup = self.parse_html(html)
         insights: List[str] = []
-        name_pattern = re.compile(rf"\\b{re.escape(character_name.lower())}\\b")
+        name_pattern = re.compile(rf"\b{re.escape(character_name.lower())}\b")
 
         # Collect a handful of relevant snippets mentioning the character
         for snippet in soup.find_all(["p", "div", "span", "li"]):
@@ -157,7 +159,7 @@ class CharacterInfoAgent(BaseAgent):
                 continue
             if name_pattern.search(text.lower()):
                 insights.append(text)
-            if len(insights) >= 3:
+            if len(insights) >= self.max_insights:
                 break
 
         return {
