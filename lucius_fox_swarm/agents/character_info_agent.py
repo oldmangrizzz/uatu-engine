@@ -148,13 +148,14 @@ class CharacterInfoAgent(BaseAgent):
 
         soup = self.parse_html(html)
         insights: List[str] = []
+        name_pattern = re.compile(rf"\\b{re.escape(character_name.lower())}\\b")
 
         # Collect a handful of relevant snippets mentioning the character
         for snippet in soup.find_all(["p", "div", "span", "li"]):
             text = snippet.get_text(" ", strip=True)
-            if not text:
+            if not text or len(text) < 40:
                 continue
-            if character_name.lower() in text.lower():
+            if name_pattern.search(text.lower()):
                 insights.append(text)
             if len(insights) >= 3:
                 break
