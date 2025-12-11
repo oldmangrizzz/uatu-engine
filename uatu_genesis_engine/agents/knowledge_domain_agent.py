@@ -4,6 +4,7 @@ Agent for mapping knowledge domains across dimensions.
 import logging
 from typing import Dict, Any, List
 from .base_agent import BaseAgent
+from ..models import DomainCategory
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +163,7 @@ class KnowledgeDomainAgent(BaseAgent):
         for keyword, context in tech_keywords.items():
             if keyword in text:
                 domains.append({
-                    "category": "technology",
+                    "category": DomainCategory.TECHNOLOGY,
                     "original_context": context,
                     "proficiency": "advanced"
                 })

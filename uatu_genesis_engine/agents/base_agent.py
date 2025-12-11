@@ -54,7 +54,8 @@ class BaseAgent(ABC):
                     if response.status == 200:
                         return await response.text()
 
-                    if response.status in {404, 429} and attempt < max_attempts:
+                    transient_statuses = {404, 429, 502, 503, 504}
+                    if response.status in transient_statuses and attempt < max_attempts:
                         delay = backoff_base * (2 ** (attempt - 1))
                         logger.warning(
                             f"{self.agent_id}: received {response.status} for {url}; "

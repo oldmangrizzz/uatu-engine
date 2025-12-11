@@ -239,12 +239,20 @@ class MultiversalSwarmOrchestrator:
             if profile.knowledge_domains
             else "Unknown Archetype"
         )
+        has_tech_focus = any(
+            getattr(d, "category", None) == DomainCategory.TECHNOLOGY
+            for d in profile.knowledge_domains
+        )
         core_drive = (
             "Mastery and innovation in technology"
-            if any(d.category == "technology" for d in profile.knowledge_domains)
+            if has_tech_focus
             else "Pursuit of knowledge across universes"
         )
-        paradox = "Balancing power, responsibility, and personal cost"
+        paradox = (
+            "Innovation versus restraint across universes"
+            if profile.variables
+            else "Balancing power, responsibility, and personal cost"
+        )
 
         nodes = [str(domain.category) for domain in profile.knowledge_domains]
         edges = []
