@@ -12,6 +12,7 @@ to boot (Hard Lock), preventing persona hijacking.
 import hashlib
 import json
 import logging
+import yaml
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -282,8 +283,6 @@ class SoulAnchorLedger:
         integrity_valid = self.verify_integrity(anchor_file_path, signature_file_path, strict=True)
         
         # If we get here, integrity is valid - safe to load
-        import yaml
-        
         anchor_path = Path(anchor_file_path)
         with open(anchor_path, 'r', encoding='utf-8') as f:
             anchor_data = yaml.safe_load(f)

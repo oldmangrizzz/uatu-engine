@@ -13,12 +13,19 @@ The purpose is twofold:
 This data is NEVER displayed to the user in real-time - it's for post-hoc analysis.
 """
 import asyncio
-import logging
 import json
-from typing import Dict, Any, Optional, List
+import logging
+import os
 from datetime import datetime
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
+from typing import Dict, Any, Optional, List
+
+try:
+    import aiohttp
+except ImportError:
+    aiohttp = None
 
 logger = logging.getLogger(__name__)
 
@@ -349,7 +356,11 @@ class ConvexStateLogger:
         
         This would make HTTP requests to Convex API.
         """
-        import aiohttp
+        if aiohttp is None:
+            raise ImportError(
+                "aiohttp is required for Convex backend integration. "
+                "Install it with: pip install aiohttp"
+            )
         
         payload = {
             "entries": [entry.to_dict() for entry in entries],
@@ -392,9 +403,6 @@ class ConvexStateLogger:
         
         Useful for development and as failsafe.
         """
-        import os
-        from pathlib import Path
-        
         backup_dir = Path(self.local_backup_path)
         backup_dir.mkdir(parents=True, exist_ok=True)
         
