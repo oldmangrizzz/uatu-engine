@@ -4,6 +4,7 @@ Example: Create Tony Stark, Bruce Wayne, and Lucius Fox personas
 """
 import asyncio
 import sys
+import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -200,7 +201,6 @@ def instantiate_persona(name, anchor_data):
         
     except Exception as e:
         print(f"❌ Failed to instantiate {name}: {e}")
-        import traceback
         traceback.print_exc()
         return None
 

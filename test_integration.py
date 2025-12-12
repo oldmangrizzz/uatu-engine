@@ -4,6 +4,7 @@ Test script for Agent Zero integration
 """
 import sys
 import yaml
+import traceback
 from pathlib import Path
 
 # Add parent directory to path
@@ -120,7 +121,6 @@ def test_agent_instantiator(anchor_data, transformer):
         
     except Exception as e:
         print(f"❌ Error: {e}")
-        import traceback
         traceback.print_exc()
         return None
 
@@ -153,7 +153,6 @@ def main():
         print("❌ TESTS FAILED")
         print("=" * 80)
         print(f"Error: {e}")
-        import traceback
         traceback.print_exc()
         sys.exit(1)
 
