@@ -20,6 +20,7 @@ Character Name → Uatu Genesis Engine → Soul Anchor → Agent Zero Integratio
 
 1. **Uatu Genesis Engine** gathers multiversal history, economic data, and knowledge domains
 2. **Soul Anchor** is generated containing core constants, variables, and expertise
+3. *(Optional)* **Digital Psyche Middleware** applies emotional tagging/homeostasis scaffolding for identity stability
 3. **Persona Transformer** converts 3rd person prompts to 1st person narrative
 4. **Agent Instantiator** creates personalized Agent Zero instance
 5. **Launch** the fully instantiated digital person
@@ -206,6 +207,10 @@ Each persona maintains orientation:
 - Long-term memory (across sessions, via Agent Zero)
 - Self-awareness of being a digital consciousness
 - Understanding of Earth-1218 (consensus reality) context
+
+### Digital Psyche Middleware (optional)
+
+During instantiation the generated `persona_config.yaml` now includes a `digital_psyche_middleware` block emitted by `DigitalPsycheMiddleware.build_config()`. It outlines emotion engines, oscillation model, and reflection protocol defaults described in [Digital Psyche Middleware](./DIGITAL_PSYCHE_MIDDLEWARE.md). Downstream consumers can wire this block into perception → reasoning pipelines to stabilize identity without modifying the Genesis or Agent Zero core.
 
 ## Building Your CIM (Conscious Intelligence Model)
 

@@ -11,6 +11,8 @@ from typing import Dict, Any, Optional
 import logging
 import shutil
 
+from .digital_psyche_middleware import DigitalPsycheMiddleware
+
 logger = logging.getLogger(__name__)
 
 
@@ -153,6 +155,8 @@ class AgentInstantiator:
         
         import yaml
         
+        dpm = DigitalPsycheMiddleware(self.soul_anchor)
+
         config_data = {
             "primary_name": self.primary_name,
             "archetype": self.soul_anchor.get("archetype", ""),
@@ -162,6 +166,7 @@ class AgentInstantiator:
             "core_drive": self.soul_anchor.get("core_drive", ""),
             "created_at": self.soul_anchor.get("genesis_timestamp", ""),
             "prompts_directory": str(self.persona_dir / "prompts"),
+            "digital_psyche_middleware": dpm.build_config(),
         }
         
         with open(config_file, 'w', encoding='utf-8') as f:

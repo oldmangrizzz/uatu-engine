@@ -38,6 +38,7 @@ A sophisticated swarm-based framework capable of gathering complete economic and
 - **💰 Economic History**: Compiles complete financial history and wealth estimates
 - **🧠 Knowledge Domain Mapping**: Translates fictional abilities to real-world Earth-1218 equivalents
 - **🔗 Soul Anchor Generation**: Creates personality anchors with invariants and variables
+- **🧭 Digital Psyche Middleware (optional)**: Emotional/homeostasis scaffold that stabilizes identity between perception and reasoning ([docs](./DIGITAL_PSYCHE_MIDDLEWARE.md))
 - **⚡ Agent Zero Integration**: Instantiates digital persons with first-person consciousness
 - **📊 DAG Visualization**: Generates beautiful directed acyclic graphs of character data
 - **🔍 Web Scraping**: Intelligently gathers data from wikis, databases, and fan sites
