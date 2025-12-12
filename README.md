@@ -69,6 +69,8 @@ python main.py --subject "Luke Skywalker" --no-graph
 
 ## How It Works 🔧
 
+For a step-by-step walkthrough of the Genesis engine flow (orchestrator + agents + outputs), see [GENESIS_ENGINE.md](./GENESIS_ENGINE.md).
+
 ### Swarm Architecture
 
 The framework uses a multi-agent swarm architecture with three specialized agents:
