@@ -9,10 +9,12 @@ from .persona_transformer import PersonaTransformer
 from .agent_instantiator import AgentInstantiator
 from .soul_anchor_loader import SoulAnchorLoader
 from .digital_psyche_middleware import DigitalPsycheMiddleware
+from .tts_voice_adapter import TTSVoiceAdapter
 
 __all__ = [
     "PersonaTransformer",
     "AgentInstantiator", 
     "SoulAnchorLoader",
     "DigitalPsycheMiddleware",
+    "TTSVoiceAdapter",
 ]

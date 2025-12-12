@@ -23,7 +23,7 @@ class DigitalPsycheMiddleware:
     ]
 
     def __init__(self, soul_anchor_data: Dict[str, Any]):
-        self.soul_anchor = soul_anchor_data or {}
+        self.soul_anchor = {} if soul_anchor_data is None else soul_anchor_data
         self.primary_name = self.soul_anchor.get("primary_name", "Agent")
 
     def build_config(self) -> Dict[str, Any]:

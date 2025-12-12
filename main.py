@@ -89,6 +89,12 @@ Examples:
         action="store_true",
         help="Enable verbose logging"
     )
+
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Run full pipeline: verbose logging, export profile, generate graph, and instantiate persona"
+    )
     
     args = parser.parse_args()
     
@@ -96,7 +102,13 @@ Examples:
     if not args.subject and not args.soul_anchor:
         parser.error("Either --subject or --soul-anchor must be provided")
     
-    if args.verbose:
+    if args.full:
+        args.export = True
+        args.graph = True
+        args.instantiate = True
+        args.verbose = True
+    
+    if args.verbose or args.full:
         logging.getLogger().setLevel(logging.DEBUG)
     
     # Run the swarm framework
@@ -114,6 +126,7 @@ async def run_swarm(args):
     """Run the swarm orchestrator and optionally instantiate in Agent Zero."""
     output_dir = Path(args.output)
     soul_anchor_file = None
+    log_file_handler = None
     
     # Phase 1: Gather data or load existing soul anchor
     if args.subject:
@@ -129,6 +142,14 @@ async def run_swarm(args):
         
         # Create output directory
         output_dir.mkdir(parents=True, exist_ok=True)
+
+        if args.full:
+            log_path = output_dir / "full_run.log"
+            file_handler = logging.FileHandler(log_path, encoding="utf-8")
+            file_handler.setLevel(logging.DEBUG)
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+            logging.getLogger().addHandler(file_handler)
+            log_file_handler = file_handler
         
         # Initialize orchestrator
         orchestrator = MultiversalSwarmOrchestrator()
@@ -261,6 +282,10 @@ async def run_swarm(args):
         print("\n" + "=" * 80)
         print("🎉 Multiversal history gathering complete!")
         print("=" * 80)
+
+    if log_file_handler:
+        logging.getLogger().removeHandler(log_file_handler)
+        log_file_handler.close()
 
     
 

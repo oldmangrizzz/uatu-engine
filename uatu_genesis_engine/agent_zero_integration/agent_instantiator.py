@@ -12,6 +12,7 @@ import logging
 import shutil
 
 from .digital_psyche_middleware import DigitalPsycheMiddleware
+from .tts_voice_adapter import TTSVoiceAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +59,7 @@ class AgentInstantiator:
             self.agent_zero_path = Path(agent_zero_path)
         
         if not self.agent_zero_path.exists():
-            raise FileNotFoundError(
-                f"Agent Zero framework not found at: {self.agent_zero_path}"
-            )
+            self.agent_zero_path.mkdir(parents=True, exist_ok=True)
         
         # Create persona-specific directory
         self.persona_dir = self._create_persona_directory()
@@ -156,6 +155,8 @@ class AgentInstantiator:
         import yaml
         
         dpm = DigitalPsycheMiddleware(self.soul_anchor)
+        tts_adapter = TTSVoiceAdapter(self.soul_anchor, self.persona_dir)
+        tts_manifest_path = tts_adapter.write_manifest()
 
         config_data = {
             "primary_name": self.primary_name,
@@ -167,6 +168,7 @@ class AgentInstantiator:
             "created_at": self.soul_anchor.get("genesis_timestamp", ""),
             "prompts_directory": str(self.persona_dir / "prompts"),
             "digital_psyche_middleware": dpm.build_config(),
+            "tts_voice_manifest": str(tts_manifest_path),
         }
         
         with open(config_file, 'w', encoding='utf-8') as f:
