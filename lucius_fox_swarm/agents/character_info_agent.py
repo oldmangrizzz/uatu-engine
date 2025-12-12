@@ -2,9 +2,10 @@
 Agent for gathering character information from various wikis and databases.
 """
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Pattern
 import asyncio
 import re
+from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 from .base_agent import BaseAgent
 
@@ -25,6 +26,18 @@ class CharacterInfoAgent(BaseAgent):
             "https://starwars.fandom.com/wiki/",
             "https://lotr.fandom.com/wiki/",
         ]
+        # Community and social sources for hypotheses and fan canon
+        self.community_sources = [
+            ("reddit", "https://old.reddit.com/search?q={query}"),
+            ("fandom_forums", "https://www.reddit.com/r/FanTheories/search?q={query}&restrict_sr=1"),
+            ("twitter_alt", "https://nitter.net/search?f=tweets&q={query}"),
+            ("fanfiction", "https://www.fanfiction.net/search/?keywords={query}"),
+            ("archiveofourown", "https://archiveofourown.org/works/search?work_search%5Bquery%5D={query}")
+        ]
+        self.max_insights = 3
+        self.min_snippet_length = 40
+        self.max_candidate_multiplier = 20
+        self._pattern_cache: Dict[str, Pattern] = {}
     
     async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Gather basic character information."""
@@ -36,7 +49,8 @@ class CharacterInfoAgent(BaseAgent):
             "multiversal_identities": [],
             "occupations": [],
             "first_appearances": [],
-            "sources": []
+            "sources": [],
+            "community_insights": []
         }
         
         # Search across multiple wiki sources
@@ -46,8 +60,21 @@ class CharacterInfoAgent(BaseAgent):
             formatted_name = character_name.replace(" ", "_")
             url = f"{source_base}{formatted_name}"
             tasks.append(self._search_source(url, source_base))
+
+        # Community/social sources (fan theories, headcanon, discussions)
+        community_tasks = []
+        encoded_query = quote_plus(character_name)
+        name_pattern = self._pattern_cache.get(character_name)
+        if not name_pattern:
+            pattern_text = re.escape(character_name)
+            name_pattern = re.compile(pattern_text, re.IGNORECASE)
+            self._pattern_cache[character_name] = name_pattern
+        for name, template in self.community_sources:
+            url = template.format(query=encoded_query)
+            community_tasks.append(self._search_community_source(url, name, name_pattern))
         
         search_results = await asyncio.gather(*tasks, return_exceptions=True)
+        community_results = await asyncio.gather(*community_tasks, return_exceptions=True)
         
         # Aggregate results
         for result in search_results:
@@ -65,10 +92,18 @@ class CharacterInfoAgent(BaseAgent):
                         "source": result.get("source")
                     })
                 results["sources"].append(result.get("source"))
+
+        # Aggregate community/headcanon sources
+        for result in community_results:
+            if isinstance(result, dict) and result.get("found"):
+                if result.get("insights"):
+                    results["community_insights"].extend(result["insights"])
+                results["sources"].append(result.get("source"))
         
         # Deduplicate
         results["aliases"] = list(set(results["aliases"]))
         results["occupations"] = list(set(results["occupations"]))
+        results["sources"] = list(set(results["sources"]))
         
         logger.info(f"Found {len(results['sources'])} sources for {character_name}")
         return results
@@ -114,6 +149,41 @@ class CharacterInfoAgent(BaseAgent):
                         result["first_appearance"] = data_text
         
         return result
+
+    async def _search_community_source(self, url: str, label: str, name_pattern: Pattern[str]) -> Dict[str, Any]:
+        """Search community-driven sources (Reddit, social mirrors, forums) for headcanon and hypotheses."""
+        html = await self.fetch_url(url)
+        if not html:
+            return {"found": False, "source": url}
+
+        soup = self.parse_html(html)
+        insights: List[str] = []
+
+        # Collect a handful of relevant snippets mentioning the character
+        candidate_nodes = soup.find_all(
+            ["p", "li", "div", "span"],
+            limit=self.max_insights * self.max_candidate_multiplier
+        )
+
+        for snippet in candidate_nodes:
+            if len(insights) >= self.max_insights:
+                break
+            if snippet.name in {"div", "span"}:
+                classes = snippet.get("class", [])
+                if classes and not any("content" in cls or "comment" in cls for cls in classes):
+                    continue
+            text = snippet.get_text(" ", strip=True)
+            if not text or len(text) < self.min_snippet_length:
+                continue
+            if name_pattern.search(text):
+                insights.append(text)
+
+        return {
+            "found": len(insights) > 0,
+            "source": url,
+            "community": label,
+            "insights": insights
+        }
     
     def _extract_universe(self, source_base: str, soup: BeautifulSoup) -> str:
         """Extract universe designation from the wiki."""
