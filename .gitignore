@@ -52,3 +52,14 @@ output/
 # OS
 .DS_Store
 Thumbs.db
+
+# Agent Zero specific
+agent_zero_framework/.git/
+agent_zero_framework/logs/
+agent_zero_framework/memory/
+agent_zero_framework/tmp/
+agent_zero_framework/usr/
+agent_zero_framework/personas/*/memory/
+agent_zero_framework/personas/*/logs/
+agent_zero_framework/webui/node_modules/
+
