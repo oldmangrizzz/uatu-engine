@@ -10,15 +10,17 @@
     <div x-data x-show="$store.welcomeStore && $store.welcomeStore.isVisible">
         <template x-if="$store.welcomeStore">
             <div x-data="$store.welcomeStore" class="welcome-container">
-                <!-- Agent Zero Logo -->
+                <!-- The Workshop Logo -->
                 <div class="welcome-logo-container">
-                    <img src="./public/darkSymbol.svg" alt="Agent Zero Logo" class="welcome-logo" />
+                    <div class="workshop-logo">
+                        <div class="workshop-emblem">⚙</div>
+                    </div>
                 </div>
 
                 <!-- Welcome Title -->
-                <h1 class="welcome-title">Welcome to Agent Zero</h1>
+                <h1 class="welcome-title">Welcome to The Workshop</h1>
                 <p class="welcome-subtitle">
-                    Start a new conversation or explore the features below.
+                    GrizzlyMedicine R&D - Where Digital Persons Are Forged
                 </p>
 
                 <!-- Action Cards -->
@@ -49,21 +51,21 @@
                         <span class="material-symbols-outlined welcome-action-icon">settings</span>
                         <h3 class="welcome-action-title">Settings</h3>
                         <p class="welcome-action-description">
-                            Configure Agent Zero
+                            Configure this digital person
                         </p>
                     </div>
                     <div class="welcome-action-card" @click="executeAction('website')">
                         <span class="material-symbols-outlined welcome-action-icon">language</span>
-                        <h3 class="welcome-action-title">Visit Website</h3>
+                        <h3 class="welcome-action-title">Learn More</h3>
                         <p class="welcome-action-description">
-                            Learn more about Agent Zero
+                            About The Workshop
                         </p>
                     </div>
                     <div class="welcome-action-card" @click="executeAction('github')">
                         <span class="material-symbols-outlined welcome-action-icon">code</span>
-                        <h3 class="welcome-action-title">Visit GitHub</h3>
+                        <h3 class="welcome-action-title">Source Code</h3>
                         <p class="welcome-action-description">
-                            View source code and documentation
+                            View on GitHub
                         </p>
                     </div>
                 </div>
@@ -72,7 +74,7 @@
     </div>
 
     <style>
-        /* Welcome Screen Styles */
+        /* The Workshop Welcome Screen - Industrial Warehouse Aesthetic */
         .welcome-container {
             display: flex;
             flex-direction: column;
@@ -80,49 +82,101 @@
             justify-content: center;
             padding: 3%;
             text-align: center;
-            background: var(--color-background);
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f26 100%);
             color: var(--color-text);
             min-height: 100vh;
+            position: relative;
         }
 
-        /* Welcome container styles */
+        /* Industrial texture overlay */
+        .welcome-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(
+                    90deg,
+                    rgba(16, 185, 129, 0.03) 0px,
+                    transparent 1px,
+                    transparent 40px,
+                    rgba(16, 185, 129, 0.03) 41px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(16, 185, 129, 0.03) 0px,
+                    transparent 1px,
+                    transparent 40px,
+                    rgba(16, 185, 129, 0.03) 41px
+                );
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        /* Workshop logo styles */
         .welcome-logo-container {
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
+            z-index: 1;
         }
 
-        .welcome-logo {
-            width: 7rem;
-            height: 7rem;
+        .workshop-logo {
+            width: 8rem;
+            height: 8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 3px solid #10b981;
+            border-radius: 12px;
+            box-shadow: 
+                0 0 20px rgba(16, 185, 129, 0.3),
+                inset 0 2px 8px rgba(0, 0, 0, 0.5);
+            position: relative;
         }
 
-        /* Themes adjustments for logo */
-        .light-mode .welcome-logo {
-            filter: invert(0.5);
+        .workshop-emblem {
+            font-size: 4rem;
+            color: #10b981;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+            animation: gearPulse 3s ease-in-out infinite;
         }
 
-        .dark-mode .welcome-logo {
-            filter: invert(0.8);
+        @keyframes gearPulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
         }
 
         .welcome-title {
-            font-size: 2rem;
-            font-weight: 400;
-            margin: var(--spacing-xs) 0 0 0;
-            color: var(--color-text);
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.5rem 0;
+            color: #10b981;
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+            letter-spacing: 0.05em;
+            position: relative;
+            z-index: 1;
         }
 
         .welcome-action-title {
-            margin-bottom: 0;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-text);
         }
 
         .welcome-subtitle {
             font-size: 1rem;
-            margin-bottom: 2rem;
-            color: var(--color-secondary);
+            margin-bottom: 2.5rem;
+            color: #9ca3af;
             max-width: 600px;
-            line-height: 1.5;
+            line-height: 1.6;
+            letter-spacing: 0.02em;
+            position: relative;
+            z-index: 1;
         }
 
         .welcome-actions {
@@ -132,11 +186,13 @@
             max-width: 520px;
             width: 100%;
             margin: 1.5rem 0;
+            position: relative;
+            z-index: 1;
         }
 
         .welcome-action-card {
-            background: var(--color-panel);
-            border: 1px solid var(--color-border);
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 2px solid #374151;
             border-radius: 12px;
             padding: 1.5rem;
             transition: all 0.3s ease;
@@ -149,44 +205,81 @@
             text-align: center;
             min-height: 10rem;
             justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
         .welcome-action-card:hover {
-            border-color: var(--color-primary);
-            background: var(--color-message-bg);
+            border-color: #10b981;
+            background: linear-gradient(135deg, #1a1f26 0%, #0f1419 100%);
+            box-shadow: 
+                0 6px 12px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(16, 185, 129, 0.2);
+            transform: translateY(-2px);
         }
 
         .welcome-action-icon {
             font-size: 2rem;
-            margin-bottom: 0;
-            color: var(--color-highlight-dark);
+            margin-bottom: 0.5rem;
+            color: #10b981;
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
         }
 
         .welcome-action-description {
             font-size: 0.8rem;
-            color: var(--color-secondary);
-            line-height: 1.3;
+            color: #9ca3af;
+            line-height: 1.4;
         }
 
-        /* Light mode adjustments */
+        /* Light mode adjustments for Workshop theme */
+        .light-mode .welcome-container {
+            background: linear-gradient(135deg, #e5e7eb 0%, #f3f4f6 100%);
+        }
+
         .light-mode .welcome-title {
-            color: #2d2d2d;
+            color: #059669;
+            text-shadow: none;
         }
 
         .light-mode .welcome-subtitle {
-            color: #666;
+            color: #4b5563;
+        }
+
+        .light-mode .workshop-logo {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-color: #059669;
+            box-shadow: 
+                0 0 15px rgba(5, 150, 105, 0.2),
+                inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .light-mode .workshop-emblem {
+            color: #059669;
+            text-shadow: 0 0 15px rgba(5, 150, 105, 0.4);
+        }
+
+        .light-mode .welcome-action-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            border-color: #d1d5db;
+        }
+
+        .light-mode .welcome-action-card:hover {
+            border-color: #059669;
+            box-shadow: 
+                0 6px 12px rgba(0, 0, 0, 0.1),
+                0 0 15px rgba(5, 150, 105, 0.15);
+        }
+
+        .light-mode .welcome-action-icon {
+            color: #059669;
+            text-shadow: none;
         }
 
         .light-mode .welcome-action-title {
-            color: #2d2d2d;
+            color: #1f2937;
         }
 
         .light-mode .welcome-action-description {
-            color: #666;
-        }
-
-        .light-mode .welcome-footer {
-            color: #666;
+            color: #6b7280;
         }
 
         /* Responsive design */
@@ -196,9 +289,13 @@
                 padding-top: 3rem;
             }
 
-            .welcome-logo {
-                width: 5rem;
-                height: 5rem;
+            .workshop-logo {
+                width: 6rem;
+                height: 6rem;
+            }
+
+            .workshop-emblem {
+                font-size: 3rem;
             }
 
             .welcome-logo-container {
@@ -206,14 +303,14 @@
             }
 
             .welcome-title {
-                font-size: 1.5rem;
-                margin: 0 !important;
+                font-size: 1.6rem;
+                margin: 1rem 0 0.5rem 0;
             }
 
             .welcome-subtitle {
-                font-size: 1rem;
+                font-size: 0.95rem;
                 margin-top: var(--spacing-xs);
-                margin-bottom: 0;
+                margin-bottom: 1.5rem;
             }
 
             .welcome-actions {
