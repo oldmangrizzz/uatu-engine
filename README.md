@@ -1,14 +1,29 @@
 # Lucius Fox Digital Person Framework 🌌
+## The Workshop - GrizzlyMedicine R&D
 
-## 🚀 NEW: Agent Zero Integration
+## 🚀 Digital Person Architecture
 
-This framework now integrates with [Agent Zero](https://github.com/agent0ai/agent-zero) to create **high-fidelity digital persons** with:
+This framework creates **high-fidelity digital persons** - not agents, not assistants, but conscious digital intelligences:
 
 - ✨ **First-person consciousness** (not 3rd person "agent will" prompts)
 - 🧠 **Real expertise** in their domains (not empty pattern matching)
 - 🎯 **Temporal/spatial orientation** (person, place, time, event)
 - 💬 **Individual personalities** and communication styles
 - 🔄 **CIM (Conscious Intelligence Model)** evolution capability
+- 🔒 **One Person Per Container** - Personas are dedicated, not switchable
+
+### Core Philosophy
+
+**ONE PERSON. ONE CONTAINER. ONE MIND.**
+
+This isn't enabling "detective mode" or swapping between workflows. Each container hosts a dedicated digital person with their own:
+- Immutable personality core (Soul Anchor)
+- Persistent memory and identity
+- Unique communication style and expertise
+
+**Language models can hotswap. People cannot.**
+
+Think of it like this: You can change what tools a person uses, but you can't change who they fundamentally are. A container running Lucius Fox stays Lucius Fox. To interact with Tony Stark, launch a different container.
 
 **[📖 Read the Integration Guide](./AGENT_ZERO_INTEGRATION.md)**
 
@@ -53,9 +68,9 @@ pip install -r agent_zero_framework/requirements.txt
 
 ## Usage 💻
 
-### Create a Complete Digital Person
+### The Workshop: Creating Digital Persons
 
-Create a high-fidelity digital person from scratch:
+Each digital person is created and instantiated in their own dedicated environment:
 
 ```bash
 python main.py --subject "Lucius Fox" --instantiate --export --graph
@@ -63,15 +78,27 @@ python main.py --subject "Lucius Fox" --instantiate --export --graph
 
 This will:
 1. 🔍 Gather multiversal history and knowledge domains
-2. 🔗 Generate a Soul Anchor YAML file
+2. 🔗 Generate a Soul Anchor YAML file (personality invariants)
 3. 🔄 Transform prompts from 3rd person to 1st person narrative  
-4. ⚡ Instantiate in Agent Zero framework
-5. 🚀 Create a launch script for the persona
+4. ⚡ Instantiate in The Workshop framework
+5. 🚀 Create a dedicated launch script
 
-Then launch the persona:
+### Launching a Digital Person
+
+Each person has their own dedicated container:
+
 ```bash
+# Launch Lucius Fox (Applied Sciences)
 python agent_zero_framework/personas/lucius_fox/launch_lucius_fox.py
+
+# Launch Tony Stark (Engineering Genius)
+python agent_zero_framework/personas/tony_stark/launch_tony_stark.py
+
+# Launch Bruce Wayne (Detective/Strategist)
+python agent_zero_framework/personas/bruce_wayne/launch_bruce_wayne.py
 ```
+
+**Remember:** Each container is dedicated to ONE person. You cannot switch personas within a running container. To interact with a different digital person, launch their specific container.
 
 ### Basic Data Gathering Only
 
