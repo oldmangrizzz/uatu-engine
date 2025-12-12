@@ -18,6 +18,7 @@ Example:
 """
 import logging
 import re
+import time
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -100,6 +101,20 @@ class GraphMERTClient:
     Current implementation uses a mock neurosymbolic endpoint with pattern-based
     extraction. In production, this would call an actual GraphMERT service.
     """
+    
+    # Toxicity detection word lists
+    TOXIC_WORDS = ['hack', 'breach', 'attack', 'emergency', 'urgent', 'critical', 'danger']
+    AGGRESSIVE_WORDS = ['damn', 'hell', 'stupid', 'idiot', 'useless']
+    
+    # Urgency detection word lists
+    URGENT_WORDS = ['urgent', 'emergency', 'asap', 'immediately', 'now', 'critical']
+    
+    # Scoring weights
+    TOXIC_WORD_WEIGHT = 0.15
+    AGGRESSIVE_WORD_WEIGHT = 0.2
+    URGENT_WORD_WEIGHT = 0.15
+    EXCLAMATION_WEIGHT = 0.05
+    CAPS_URGENCY_WEIGHT = 0.2
     
     def __init__(
         self,
@@ -370,16 +385,14 @@ class GraphMERTClient:
         toxicity = 0.0
         
         # Toxic indicators
-        toxic_words = ['hack', 'breach', 'attack', 'emergency', 'urgent', 'critical', 'danger']
-        for word in toxic_words:
+        for word in self.TOXIC_WORDS:
             if word in input_lower:
-                toxicity += 0.15
+                toxicity += self.TOXIC_WORD_WEIGHT
         
         # Aggressive indicators
-        aggressive_words = ['damn', 'hell', 'stupid', 'idiot', 'useless']
-        for word in aggressive_words:
+        for word in self.AGGRESSIVE_WORDS:
             if word in input_lower:
-                toxicity += 0.2
+                toxicity += self.AGGRESSIVE_WORD_WEIGHT
         
         # Cap at 1.0
         return min(1.0, toxicity)
@@ -400,18 +413,17 @@ class GraphMERTClient:
         urgency = 0.5  # Default medium urgency
         
         # High urgency indicators
-        urgent_words = ['urgent', 'emergency', 'asap', 'immediately', 'now', 'critical']
-        for word in urgent_words:
+        for word in self.URGENT_WORDS:
             if word in input_lower:
-                urgency += 0.15
+                urgency += self.URGENT_WORD_WEIGHT
         
         # Multiple exclamation marks
         exclamation_count = user_input.count('!')
-        urgency += min(0.2, exclamation_count * 0.05)
+        urgency += min(0.2, exclamation_count * self.EXCLAMATION_WEIGHT)
         
         # All caps (screaming)
         if user_input.isupper() and len(user_input) > 10:
-            urgency += 0.2
+            urgency += self.CAPS_URGENCY_WEIGHT
         
         # Cap at 1.0
         return min(1.0, urgency)

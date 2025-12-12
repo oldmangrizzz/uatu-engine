@@ -17,6 +17,7 @@ This is the final piece that brings the "Hybrid Mind" online.
 """
 import asyncio
 import logging
+import time
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -216,7 +217,6 @@ class HybridMindIntegration:
         Returns:
             HybridMindState with complete state snapshot
         """
-        import time
         start_time = time.time()
         
         self.total_interactions += 1

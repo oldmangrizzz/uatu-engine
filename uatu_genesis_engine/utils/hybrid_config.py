@@ -4,6 +4,7 @@ Configuration loader for hybrid settings.
 Loads configuration from hybrid_settings.yaml and environment variables.
 """
 import os
+import re
 import yaml
 import logging
 from typing import Dict, Any, Optional
@@ -71,7 +72,6 @@ class HybridConfig:
             return [self._substitute_env_vars(item) for item in config]
         elif isinstance(config, str):
             # Replace ${VAR_NAME} with environment variable
-            import re
             pattern = r'\$\{([^}]+)\}'
             
             def replacer(match):
