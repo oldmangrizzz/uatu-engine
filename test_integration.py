@@ -10,6 +10,9 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
+import pytest
+import textwrap
+
 from uatu_genesis_engine.agent_zero_integration import (
     SoulAnchorLoader,
     PersonaTransformer,
@@ -17,14 +20,9 @@ from uatu_genesis_engine.agent_zero_integration import (
 )
 
 
-def test_soul_anchor_loader():
-    """Test loading a soul anchor."""
-    print("=" * 80)
-    print("Testing Soul Anchor Loader")
-    print("=" * 80)
-    
-    # Create a sample soul anchor
-    sample_anchor = {
+@pytest.fixture
+def anchor_data():
+    return {
         "primary_name": "Lucius Fox",
         "archetype": "technology",
         "core_constants": [
@@ -55,74 +53,55 @@ def test_soul_anchor_loader():
         "core_drive": "Using technology to protect and serve justice",
         "genesis_timestamp": "2024-12-12T00:00:00Z"
     }
-    
-    # Test loading from dict
-    loader = SoulAnchorLoader()
-    loader.load_from_dict(sample_anchor)
-    
-    print(f"✅ Primary Name: {loader.get_primary_name()}")
-    print(f"✅ Archetype: {loader.get_archetype()}")
-    print(f"✅ Core Constants: {len(loader.get_core_constants())}")
-    print(f"✅ Knowledge Domains: {len(loader.get_knowledge_domains())}")
-    print()
-    
-    return loader, sample_anchor
 
 
-def test_persona_transformer(anchor_data):
+@pytest.fixture
+def loader(anchor_data):
+    l = SoulAnchorLoader()
+    l.load_from_dict(anchor_data)
+    return l
+
+
+@pytest.fixture
+def transformer(anchor_data):
+    return PersonaTransformer(anchor_data)
+
+
+def test_soul_anchor_loader(loader):
+    """Test loading a soul anchor."""
+    assert loader.get_primary_name() == "Lucius Fox"
+    assert loader.get_archetype() == "technology"
+    assert len(loader.get_core_constants()) == 3
+    assert len(loader.get_knowledge_domains()) == 2
+
+
+def test_persona_transformer(transformer):
     """Test persona transformation."""
-    print("=" * 80)
-    print("Testing Persona Transformer")
-    print("=" * 80)
-    
-    transformer = PersonaTransformer(anchor_data)
-    
-    # Test transforming a sample prompt
-    original_prompt = """agent zero autonomous json ai agent
-solve superior tasks using tools and subordinates
-follow behavioral rules instructions
-execute code actions yourself not instruct superior"""
+    original_prompt = textwrap.dedent(
+        """\
+        agent zero autonomous json ai agent
+        solve superior tasks using tools and subordinates
+        follow behavioral rules instructions
+        execute code actions yourself not instruct superior"""
+    )
     
     transformed = transformer.transform_role_prompt(original_prompt)
-    
-    print("Original prompt:")
-    print(original_prompt)
-    print("\nTransformed prompt:")
-    print(transformed[:500] + "..." if len(transformed) > 500 else transformed)
-    print()
-    
-    return transformer
+    assert transformer.primary_name in transformed
 
 
-def test_agent_instantiator(anchor_data, transformer):
+def test_agent_instantiator(anchor_data, transformer, tmp_path):
     """Test agent instantiation (dry run)."""
-    print("=" * 80)
-    print("Testing Agent Instantiator")
-    print("=" * 80)
-    
-    try:
-        instantiator = AgentInstantiator(anchor_data)
-        
-        print(f"✅ Persona directory created: {instantiator.persona_dir}")
-        print(f"✅ Primary name: {instantiator.primary_name}")
-        
-        # Test creating config (without full instantiation)
-        config_file = instantiator.create_persona_config()
-        print(f"✅ Config file created: {config_file}")
-        
-        # Check if config is valid YAML
-        with open(config_file, 'r') as f:
-            config_data = yaml.safe_load(f)
-        
-        print(f"✅ Config contains: {list(config_data.keys())}")
-        print()
-        
-        return instantiator
-        
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        traceback.print_exc()
-        return None
+    instantiator = AgentInstantiator(anchor_data, agent_zero_path=str(tmp_path / "az"))
+    instantiator.agent_zero_path.mkdir(parents=True, exist_ok=True)
+    (instantiator.agent_zero_path / "prompts").mkdir(parents=True, exist_ok=True)
+    for name in ["agent.system.main.role.md", "agent.system.main.md", "agent.system.main.communication.md", "agent.system.behaviour.md"]:
+        (instantiator.agent_zero_path / "prompts" / name).write_text("agent zero will act", encoding="utf-8")
+
+    config_file = instantiator.create_persona_config()
+    with open(config_file, 'r') as f:
+        config_data = yaml.safe_load(f)
+    assert "digital_psyche_middleware" in config_data
+    assert "tts_voice_manifest" in config_data
 
 
 def main():

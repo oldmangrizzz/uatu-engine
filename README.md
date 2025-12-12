@@ -38,6 +38,8 @@ A sophisticated swarm-based framework capable of gathering complete economic and
 - **💰 Economic History**: Compiles complete financial history and wealth estimates
 - **🧠 Knowledge Domain Mapping**: Translates fictional abilities to real-world Earth-1218 equivalents
 - **🔗 Soul Anchor Generation**: Creates personality anchors with invariants and variables
+- **🧭 Digital Psyche Middleware (optional)**: Emotional/homeostasis scaffold that stabilizes identity between perception and reasoning ([docs](./DIGITAL_PSYCHE_MIDDLEWARE.md))
+- **🔊 Neutts-Air Voice Manifest (optional)**: Emits persona-specific TTS voice metadata (style tokens, lexical seeds) from the soul anchor for unique voices per individual
 - **⚡ Agent Zero Integration**: Instantiates digital persons with first-person consciousness
 - **📊 DAG Visualization**: Generates beautiful directed acyclic graphs of character data
 - **🔍 Web Scraping**: Intelligently gathers data from wikis, databases, and fan sites
@@ -126,6 +128,9 @@ python main.py --subject "Hermione Granger" --verbose
 
 # Disable graph generation
 python main.py --subject "Luke Skywalker" --no-graph
+
+# Run full pipeline (verbose + export + graph + instantiate)
+python main.py --subject "Lucius Fox" --full
 ```
 
 ### Command-Line Arguments
