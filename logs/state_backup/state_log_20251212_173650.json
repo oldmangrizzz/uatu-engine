@@ -1,0 +1,91 @@
+{
+  "timestamp": "2025-12-12T17:36:50.206460",
+  "count": 4,
+  "entries": [
+    {
+      "entry_type": "interaction",
+      "timestamp": "2025-12-12T17:36:50.206385",
+      "data": {
+        "user_input": "I need help with the Wayne Enterprises security breach.",
+        "agent_output": "[SYNTHESIS] Reconciled response balancing objectivity and Tech Genius perspective: I need help with the Wayne Enterprises security breach."
+      },
+      "metadata": {
+        "interaction_number": 1,
+        "graphmert_enabled": true,
+        "neurotransmitter_enabled": true,
+        "dialectic_enabled": true
+      },
+      "level": "info"
+    },
+    {
+      "entry_type": "neurotransmitter",
+      "timestamp": "2025-12-12T17:36:50.206389",
+      "data": {
+        "dopamine": 0.5,
+        "serotonin": 0.5500000157276363,
+        "cortisol": 0.3449999370422198
+      },
+      "metadata": {
+        "flags": {
+          "defensive_posture": false,
+          "high_motivation": false,
+          "emotional_instability": false,
+          "balanced_state": false
+        }
+      },
+      "level": "debug"
+    },
+    {
+      "entry_type": "dialectical_chain",
+      "timestamp": "2025-12-12T17:36:50.206392",
+      "data": {
+        "user_input": "I need help with the Wayne Enterprises security breach.",
+        "thesis": {
+          "stage": "thesis",
+          "content": "[THESIS] Standard helpful response to: I need help with the Wayne Enterprises security breach.",
+          "reasoning": "Generated from objective, helpful assistant perspective",
+          "confidence": 0.9,
+          "bias_influence": 0.0
+        },
+        "antithesis": {
+          "stage": "antithesis",
+          "content": "[ANTITHESIS] Response filtered through Tech Genius bias: I need help with the Wayne Enterprises security breach.",
+          "reasoning": "Driven by core constants: Innovation, Ethics",
+          "confidence": 0.7,
+          "bias_influence": 1.0
+        },
+        "synthesis": {
+          "stage": "synthesis",
+          "content": "[SYNTHESIS] Reconciled response balancing objectivity and Tech Genius perspective: I need help with the Wayne Enterprises security breach.",
+          "reasoning": "Reconciles thesis (bias: 0.0) with antithesis (bias: 1.0)",
+          "confidence": 0.95,
+          "bias_influence": 0.6
+        },
+        "final_output": "[SYNTHESIS] Reconciled response balancing objectivity and Tech Genius perspective: I need help with the Wayne Enterprises security breach.",
+        "metadata": {
+          "archetype": "Tech Genius",
+          "core_drive": "Protect through technology",
+          "context": {}
+        },
+        "created_at": "2025-12-12T17:36:50.206377"
+      },
+      "metadata": {},
+      "level": "info"
+    },
+    {
+      "entry_type": "emotional_event",
+      "timestamp": "2025-12-12T17:36:50.206396",
+      "data": {
+        "event_type": "user_interaction",
+        "description": "User input (toxicity: 0.15, urgency: 0.50)",
+        "emotional_impact": {
+          "dopamine": 0.0,
+          "serotonin": 0.05,
+          "cortisol": 0.045
+        }
+      },
+      "metadata": {},
+      "level": "info"
+    }
+  ]
+}
