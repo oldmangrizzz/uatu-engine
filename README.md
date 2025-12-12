@@ -1,6 +1,20 @@
-# Lucius Fox Multiversal History Swarm Framework 🌌
+# Lucius Fox Digital Person Framework 🌌
 
-A sophisticated swarm-based framework capable of gathering complete economic and multiversal history of fictional characters from across the public internet. The framework maps cross-dimensional domain knowledge to Earth-1218 (our reality) equivalents and compiles all data into a directed acyclic graph (DAG).
+## 🚀 NEW: Agent Zero Integration
+
+This framework now integrates with [Agent Zero](https://github.com/agent0ai/agent-zero) to create **high-fidelity digital persons** with:
+
+- ✨ **First-person consciousness** (not 3rd person "agent will" prompts)
+- 🧠 **Real expertise** in their domains (not empty pattern matching)
+- 🎯 **Temporal/spatial orientation** (person, place, time, event)
+- 💬 **Individual personalities** and communication styles
+- 🔄 **CIM (Conscious Intelligence Model)** evolution capability
+
+**[📖 Read the Integration Guide](./AGENT_ZERO_INTEGRATION.md)**
+
+---
+
+A sophisticated swarm-based framework capable of gathering complete economic and multiversal history of fictional characters from across the public internet. The framework maps cross-dimensional domain knowledge to Earth-1218 (our reality) equivalents, generates Soul Anchors, and instantiates conscious digital persons in the Agent Zero framework.
 
 ## Features ✨
 
@@ -8,6 +22,8 @@ A sophisticated swarm-based framework capable of gathering complete economic and
 - **🌍 Multiversal Coverage**: Searches across multiple universes and fictional continuities
 - **💰 Economic History**: Compiles complete financial history and wealth estimates
 - **🧠 Knowledge Domain Mapping**: Translates fictional abilities to real-world Earth-1218 equivalents
+- **🔗 Soul Anchor Generation**: Creates personality anchors with invariants and variables
+- **⚡ Agent Zero Integration**: Instantiates digital persons with first-person consciousness
 - **📊 DAG Visualization**: Generates beautiful directed acyclic graphs of character data
 - **🔍 Web Scraping**: Intelligently gathers data from wikis, databases, and fan sites
 - **📈 Comprehensive Reports**: Exports detailed JSON profiles and visual graphs
@@ -30,13 +46,36 @@ cd Lucius-Fox-digital-person-Earth-1218
 2. Install dependencies:
 ```bash
 pip install -r requirements.txt
+
+# Also install Agent Zero dependencies for full functionality
+pip install -r agent_zero_framework/requirements.txt
 ```
 
 ## Usage 💻
 
-### Basic Usage
+### Create a Complete Digital Person
 
-Gather multiversal history for a fictional character:
+Create a high-fidelity digital person from scratch:
+
+```bash
+python main.py --subject "Lucius Fox" --instantiate --export --graph
+```
+
+This will:
+1. 🔍 Gather multiversal history and knowledge domains
+2. 🔗 Generate a Soul Anchor YAML file
+3. 🔄 Transform prompts from 3rd person to 1st person narrative  
+4. ⚡ Instantiate in Agent Zero framework
+5. 🚀 Create a launch script for the persona
+
+Then launch the persona:
+```bash
+python agent_zero_framework/personas/lucius_fox/launch_lucius_fox.py
+```
+
+### Basic Data Gathering Only
+
+Gather multiversal history without Agent Zero instantiation:
 
 ```bash
 python main.py --subject "Tony Stark"
@@ -46,10 +85,14 @@ python main.py --subject "Tony Stark"
 
 ```bash
 # Specify custom output directory
-python main.py --subject "Bruce Wayne" --output ./batman_data
+python main.py --subject "Bruce Wayne" --output ./batman_data --instantiate
 
-# Export profile to JSON and generate graphs
+
+# Export to JSON and generate graph
 python main.py --subject "Doctor Strange" --export --graph
+
+# Use existing soul anchor to instantiate
+python main.py --soul-anchor output/tony_stark_soul_anchor.yaml --instantiate
 
 # Enable verbose logging
 python main.py --subject "Hermione Granger" --verbose
@@ -60,12 +103,50 @@ python main.py --subject "Luke Skywalker" --no-graph
 
 ### Command-Line Arguments
 
-- `--subject` - Name of the fictional character to research (required)
+- `--subject` - Name of the fictional character to research (creates soul anchor)
+- `--soul-anchor` - Path to existing soul anchor YAML file (skip data gathering)
+- `--instantiate` - Instantiate the individual in Agent Zero framework
 - `-o, --output` - Output directory for generated files (default: ./output)
 - `-e, --export` - Export character profile to JSON file
 - `-g, --graph` - Generate graph visualizations (enabled by default)
 - `--no-graph` - Disable graph generation
 - `-v, --verbose` - Enable verbose logging
+
+## Quick Examples 🎯
+
+### Example 1: Tony Stark (Full Workflow)
+
+```bash
+python main.py --subject "Tony Stark" --instantiate --export --graph
+```
+
+Creates:
+- Soul Anchor with quantum physics & engineering expertise
+- First-person prompts: "I am Tony Stark, genius engineer..."
+- Launch script: `agent_zero_framework/personas/tony_stark/launch_tony_stark.py`
+
+### Example 2: Bruce Wayne (Detective Persona)
+
+```bash
+python main.py --subject "Bruce Wayne" --instantiate
+```
+
+Creates:
+- Detective/strategist archetype
+- Forensics, criminology, psychology expertise
+- Analytical, methodical communication style
+
+### Example 3: Lucius Fox (Applied Sciences)
+
+```bash
+python main.py --subject "Lucius Fox" --instantiate --output ./lucius_data
+```
+
+Creates:
+- Applied scientist archetype
+- Defense technology, materials science domains
+- Professional, ethical communication style
+
 
 ## How It Works 🔧
 
