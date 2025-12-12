@@ -5,10 +5,18 @@ import asyncio
 import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+import os
 
 from .agents import CharacterInfoAgent, EconomicHistoryAgent, KnowledgeDomainAgent
 from .graph import MultiversalGraphGenerator
-from .models import CharacterProfile, MultiversalIdentity, KnowledgeDomain, EconomicEvent
+from .models import (
+    CharacterProfile,
+    MultiversalIdentity,
+    KnowledgeDomain,
+    EconomicEvent,
+    TimeSeriesEvent,
+    DomainCategory,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -96,8 +104,13 @@ class MultiversalSwarmOrchestrator:
         # Build knowledge domains
         knowledge_domains = []
         for domain_data in knowledge_data.get("knowledge_domains", []):
+            raw_category = domain_data.get("category", "other")
+            try:
+                category = DomainCategory(raw_category)
+            except ValueError:
+                category = DomainCategory.OTHER
             domain = KnowledgeDomain(
-                category=domain_data.get("category", "other"),
+                category=category,
                 original_context=domain_data.get("original_context", ""),
                 earth_1218_equivalent=domain_data.get("earth_1218_equivalent", ""),
                 proficiency_level=domain_data.get("proficiency_level", "intermediate"),
@@ -133,6 +146,8 @@ class MultiversalSwarmOrchestrator:
         all_sources.update(char_info.get("sources", []))
         all_sources.update(econ_history.get("sources", []))
         all_sources.update(knowledge_data.get("sources", []))
+
+        time_series_events = self._build_time_series(economic_events)
         
         # Calculate completeness score
         completeness = self._calculate_completeness(
@@ -146,15 +161,18 @@ class MultiversalSwarmOrchestrator:
         profile = CharacterProfile(
             primary_name=character_name,
             aliases=char_info.get("aliases", []),
+            constants=char_info.get("constants", []),
+            variables=char_info.get("variables", []),
             multiversal_identities=multiversal_identities,
             knowledge_domains=knowledge_domains,
             economic_history=economic_events,
+            time_series_events=time_series_events,
             total_wealth_estimate=total_wealth,
             data_sources=list(all_sources),
             last_updated=datetime.now(),
             completeness_score=completeness
         )
-        
+
         return profile
     
     def _calculate_completeness(
@@ -186,6 +204,85 @@ class MultiversalSwarmOrchestrator:
             score += 5.0
         
         return min(score, 100.0)
+
+    def _build_time_series(self, events: List[EconomicEvent]) -> List[TimeSeriesEvent]:
+        """Create a simple causal chain from economic events for SNN pipelines."""
+        series: List[TimeSeriesEvent] = []
+        for idx, event in enumerate(events):
+            series.append(
+                TimeSeriesEvent(
+                    sequence=idx,
+                    cause=event.event_type,
+                    effect=event.description,
+                    source=event.source_universe,
+                )
+            )
+        return series
+
+    def export_soul_anchor(self, output_path: str) -> str:
+        """Export a Soul Anchor YAML representation."""
+        if not self.character_profile:
+            logger.error("No character profile available. Run gather_multiversal_history first.")
+            return ""
+
+        try:
+            import yaml
+        except ImportError:
+            logger.error("PyYAML is required to export soul anchor files.")
+            return ""
+
+        os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else ".", exist_ok=True)
+
+        profile = self.character_profile
+        archetype = (
+            profile.knowledge_domains[0].category
+            if profile.knowledge_domains
+            else "Unknown Archetype"
+        )
+        has_tech_focus = any(
+            getattr(d, "category", None) == DomainCategory.TECHNOLOGY
+            for d in profile.knowledge_domains
+        )
+        core_drive = (
+            "Mastery and innovation in technology"
+            if has_tech_focus
+            else "Pursuit of knowledge across universes"
+        )
+        paradox = (
+            "Innovation versus restraint across universes"
+            if profile.variables
+            else "Balancing power, responsibility, and personal cost"
+        )
+
+        nodes = [str(domain.category) for domain in profile.knowledge_domains]
+        edges = []
+        for event in profile.economic_history:
+            for domain in profile.knowledge_domains[:1] if profile.knowledge_domains else []:
+                edges.append(
+                    {"cause": event.description, "effect": str(domain.category)}
+                )
+
+        soul_anchor = {
+            "identity": {
+                "designation": profile.primary_name,
+                "archetype": str(archetype),
+                "constants": profile.constants or profile.aliases,
+            },
+            "psychodynamics": {
+                "core_drive": core_drive,
+                "paradox": paradox,
+            },
+            "knowledge_graph": {
+                "nodes": nodes,
+                "edges": edges,
+            },
+        }
+
+        with open(output_path, "w") as f:
+            yaml.safe_dump(soul_anchor, f, sort_keys=False, allow_unicode=True)
+
+        logger.info(f"Soul anchor exported to {output_path}")
+        return output_path
     
     def generate_graph(self, output_dir: str = "./output") -> Dict[str, str]:
         """

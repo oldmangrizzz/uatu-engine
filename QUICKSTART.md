@@ -15,22 +15,22 @@ pip install -r requirements.txt
 
 ### 1. Gather Character Data (Simple)
 ```bash
-python main.py "Tony Stark"
+python main.py --subject "Tony Stark"
 ```
 
 ### 2. With JSON Export and Graph
 ```bash
-python main.py "Tony Stark" --export --graph
+python main.py --subject "Tony Stark" --export --graph
 ```
 
 ### 3. Custom Output Directory
 ```bash
-python main.py "Bruce Wayne" --output ./batman_results
+python main.py --subject "Bruce Wayne" --output ./batman_results
 ```
 
 ### 4. Verbose Logging
 ```bash
-python main.py "Hermione Granger" --verbose
+python main.py --subject "Hermione Granger" --verbose
 ```
 
 ## Running the Demo
@@ -55,6 +55,7 @@ Processes multiple characters: Tony Stark, Bruce Wayne, Hermione Granger
 
 After running, you'll get:
 - `{character}_profile.json` - Complete character data
+- `{character}_soul_anchor.yaml` - Anchor YAML distilled from invariants/variants
 - `{character}_multiversal_history.png` - Visual graph
 - `{character}_multiversal_history.gexf` - Graph data for Gephi
 
@@ -62,7 +63,7 @@ After running, you'll get:
 
 ```python
 import asyncio
-from lucius_fox_swarm import MultiversalSwarmOrchestrator
+from uatu_genesis_engine import MultiversalSwarmOrchestrator
 
 async def main():
     orchestrator = MultiversalSwarmOrchestrator()

@@ -50,8 +50,11 @@ class CharacterInfoAgent(BaseAgent):
             "occupations": [],
             "first_appearances": [],
             "sources": [],
-            "community_insights": []
+            "community_insights": [],
+            "constants": [],
+            "variables": []
         }
+        trait_sets: List[set] = []
         
         # Search across multiple wiki sources
         tasks = []
@@ -79,19 +82,26 @@ class CharacterInfoAgent(BaseAgent):
         # Aggregate results
         for result in search_results:
             if isinstance(result, dict) and result.get("found"):
+                traits_for_source = set()
                 if result.get("aliases"):
                     results["aliases"].extend(result["aliases"])
+                    traits_for_source.update(result["aliases"])
                 if result.get("occupation"):
                     results["occupations"].append(result["occupation"])
+                    traits_for_source.add(result["occupation"])
                 if result.get("first_appearance"):
                     results["first_appearances"].append(result["first_appearance"])
+                    traits_for_source.add(result["first_appearance"])
                 if result.get("universe"):
                     results["multiversal_identities"].append({
                         "universe": result["universe"],
                         "name": result.get("name", character_name),
                         "source": result.get("source")
                     })
+                    traits_for_source.add(result["universe"])
                 results["sources"].append(result.get("source"))
+                if traits_for_source:
+                    trait_sets.append(traits_for_source)
 
         # Aggregate community/headcanon sources
         for result in community_results:
@@ -104,6 +114,7 @@ class CharacterInfoAgent(BaseAgent):
         results["aliases"] = list(set(results["aliases"]))
         results["occupations"] = list(set(results["occupations"]))
         results["sources"] = list(set(results["sources"]))
+        results["constants"], results["variables"] = self._classify_traits(trait_sets)
         
         logger.info(f"Found {len(results['sources'])} sources for {character_name}")
         return results
@@ -205,3 +216,25 @@ class CharacterInfoAgent(BaseAgent):
             return "Middle-earth"
         else:
             return "Unknown Universe"
+
+    def _classify_traits(self, trait_sets: List[set]) -> (List[str], List[str]):
+        """Classify traits as constants or variables based on frequency."""
+        if not trait_sets:
+            return [], []
+
+        total_sources = len(trait_sets)
+        freq: Dict[str, int] = {}
+
+        for traits in trait_sets:
+            for trait in traits:
+                freq[trait] = freq.get(trait, 0) + 1
+
+        constants = []
+        variables = []
+        for trait, count in freq.items():
+            if count / total_sources >= 0.8:
+                constants.append(trait)
+            else:
+                variables.append(trait)
+
+        return list(set(constants)), list(set(variables))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Lucius Fox Multiversal History Swarm Framework
+Uatu Genesis Engine
 Main CLI entry point
 """
 import asyncio
@@ -9,7 +9,7 @@ import sys
 import logging
 from pathlib import Path
 
-from lucius_fox_swarm import MultiversalSwarmOrchestrator
+from uatu_genesis_engine import MultiversalSwarmOrchestrator
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,18 +26,19 @@ def main():
         epilog="""
 Examples:
   # Gather data for Tony Stark
-  python main.py "Tony Stark"
+  python main.py --subject "Tony Stark"
   
   # Gather data and specify output directory
-  python main.py "Bruce Wayne" --output ./batman_data
+  python main.py --subject "Bruce Wayne" --output ./batman_data
   
   # Export to JSON and generate graph
-  python main.py "Doctor Strange" --export --graph
+  python main.py --subject "Doctor Strange" --export --graph
         """
     )
     
     parser.add_argument(
-        "character_name",
+        "--subject",
+        required=True,
         type=str,
         help="Name of the fictional character to research"
     )
@@ -91,11 +92,12 @@ Examples:
 
 async def run_swarm(args):
     """Run the swarm orchestrator."""
-    character_name = args.character_name
+    character_name = args.subject
     output_dir = Path(args.output)
+    char_name_safe = character_name.replace(" ", "_").lower()
     
     logger.info("=" * 80)
-    logger.info(f"LUCIUS FOX MULTIVERSAL HISTORY SWARM FRAMEWORK")
+    logger.info(f"UATU GENESIS ENGINE")
     logger.info(f"Target Character: {character_name}")
     logger.info(f"Output Directory: {output_dir}")
     logger.info("=" * 80)
@@ -157,10 +159,14 @@ async def run_swarm(args):
     
     # Export profile to JSON
     if args.export or args.graph:
-        char_name_safe = character_name.replace(" ", "_").lower()
         json_path = output_dir / f"{char_name_safe}_profile.json"
         orchestrator.export_profile(str(json_path))
         print(f"\n✅ Profile exported to: {json_path}")
+
+    anchor_path = output_dir / f"{char_name_safe}_soul_anchor.yaml"
+    soul_anchor_file = orchestrator.export_soul_anchor(str(anchor_path))
+    if soul_anchor_file:
+        print(f"🔗 Soul Anchor emitted to: {soul_anchor_file}")
     
     # Generate graph visualizations
     # Generate by default unless --no-graph is specified

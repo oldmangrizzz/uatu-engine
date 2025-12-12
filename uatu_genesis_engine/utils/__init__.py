@@ -1,5 +1,5 @@
 """
-Utility functions for the Lucius Fox Swarm Framework.
+Utility functions for the Uatu Genesis Engine.
 """
 import re
 from typing import Optional

@@ -70,7 +70,7 @@ Successfully implemented a comprehensive swarm-based framework for gathering mul
 ├── requirements.txt                 # Python dependencies
 ├── README.md                        # Comprehensive documentation
 ├── .gitignore                       # Git ignore rules
-└── lucius_fox_swarm/
+└── uatu_genesis_engine/
     ├── __init__.py                  # Package initialization
     ├── orchestrator.py              # Main swarm coordinator
     ├── models/__init__.py           # Data models
@@ -90,17 +90,17 @@ Successfully implemented a comprehensive swarm-based framework for gathering mul
 
 ### Basic Usage
 ```bash
-python main.py "Tony Stark"
+python main.py --subject "Tony Stark"
 ```
 
 ### With All Options
 ```bash
-python main.py "Bruce Wayne" --export --graph --output ./batman_data --verbose
+python main.py --subject "Bruce Wayne" --export --graph --output ./batman_data --verbose
 ```
 
 ### Programmatic Usage
 ```python
-from lucius_fox_swarm import MultiversalSwarmOrchestrator
+from uatu_genesis_engine import MultiversalSwarmOrchestrator
 
 orchestrator = MultiversalSwarmOrchestrator()
 profile = await orchestrator.gather_multiversal_history("Tony Stark")

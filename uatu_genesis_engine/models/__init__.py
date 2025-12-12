@@ -42,6 +42,14 @@ class EconomicEvent(BaseModel):
     earth_1218_equivalent_value: Optional[float] = Field(default=None, description="USD equivalent")
 
 
+class TimeSeriesEvent(BaseModel):
+    """Represents a causal chain element for downstream SNN pipelines."""
+    sequence: int
+    cause: str
+    effect: str
+    source: Optional[str] = None
+
+
 class MultiversalIdentity(BaseModel):
     """Represents the character across different universes/realities."""
     universe_designation: str = Field(description="e.g., Earth-616, Earth-1, Prime Earth")
@@ -55,9 +63,12 @@ class CharacterProfile(BaseModel):
     """Complete profile of a fictional character across the multiverse."""
     primary_name: str
     aliases: List[str] = Field(default_factory=list)
+    constants: List[str] = Field(default_factory=list, description="Deep invariants across sources")
+    variables: List[str] = Field(default_factory=list, description="Surface-level variants across sources")
     multiversal_identities: List[MultiversalIdentity] = Field(default_factory=list)
     knowledge_domains: List[KnowledgeDomain] = Field(default_factory=list)
     economic_history: List[EconomicEvent] = Field(default_factory=list)
+    time_series_events: List[TimeSeriesEvent] = Field(default_factory=list)
     total_wealth_estimate: Optional[float] = Field(default=None, description="Earth-1218 USD equivalent")
     data_sources: List[str] = Field(default_factory=list)
     last_updated: datetime = Field(default_factory=datetime.now)
