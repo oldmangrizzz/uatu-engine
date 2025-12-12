@@ -215,6 +215,43 @@ async def run_swarm(args):
         if soul_anchor_file:
             print(f"🔗 Soul Anchor emitted to: {soul_anchor_file}")
         
+        # ===== NEW: COMPILE GRAPHMERT =====
+        print("\n" + "=" * 80)
+        print("🧠 Phase 1.5: Compiling GraphMERT (Neurosymbolic Knowledge Graph)")
+        print("=" * 80)
+        
+        from uatu_genesis_engine.graphmert import GraphMERTCompiler
+        from uatu_genesis_engine.utils.convex_seeder import ConvexSeeder
+        
+        # Compile the knowledge graph
+        compiler = GraphMERTCompiler()
+        graphmert_data = compiler.compile(profile)
+        
+        print(f"\n✅ GraphMERT compiled:")
+        print(f"   Nodes: {graphmert_data.node_count}")
+        print(f"   Facts: {graphmert_data.edge_count}")
+        print(f"   Root Invariants: {len(graphmert_data.root_invariants)}")
+        
+        # Save GraphMERT to local file
+        graphmert_path = output_dir / f"{char_name_safe}_graphmert.json"
+        with open(graphmert_path, 'w', encoding='utf-8') as f:
+            import json
+            json.dump(graphmert_data.to_dict(), f, indent=2)
+        print(f"   Saved to: {graphmert_path}")
+        
+        # Seed to Convex (mock mode for now)
+        print("\n🌐 Seeding GraphMERT to Convex...")
+        seeder = ConvexSeeder(mock_mode=True)  # Use mock mode unless Convex URL provided
+        seed_result = await seeder.seed_mind(graphmert_data)
+        
+        if seed_result.get("mock_mode"):
+            print(f"   [MOCK MODE] Saved backup to: {seed_result.get('backup_file')}")
+        else:
+            print(f"✅ Seeded to Convex successfully")
+        
+        print("=" * 80)
+        # ===== END GRAPHMERT COMPILATION =====
+        
         # Generate graph visualizations
         should_generate_graph = args.graph or (not args.no_graph and not args.graph)
         if should_generate_graph and args.subject:
