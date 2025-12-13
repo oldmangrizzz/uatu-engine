@@ -9,6 +9,7 @@ Converting local AI persona generators into cloud-deployment engines.
 This code executes real uploads to Hugging Face Spaces.
 """
 import os
+import tempfile
 from pathlib import Path
 from typing import Optional
 from huggingface_hub import HfApi
@@ -62,15 +63,19 @@ class CloudDeployer:
             # Try to get space info
             space_info = self.api.space_info(repo_id=space_name)
             return space_info.id
-        except Exception:
-            # Space doesn't exist, create it
-            space_info = self.api.create_repo(
-                repo_id=space_name,
-                repo_type="space",
-                space_sdk="docker",
-                exist_ok=True
-            )
-            return space_name
+        except HfHubHTTPError as e:
+            # Space doesn't exist (404), create it
+            if e.response.status_code == 404:
+                space_info = self.api.create_repo(
+                    repo_id=space_name,
+                    repo_type="space",
+                    space_sdk="docker",
+                    exist_ok=True
+                )
+                return space_name
+            else:
+                # Other HTTP errors should be re-raised
+                raise
     
     def _generate_dockerfile(self, persona_path: str, launch_script: str) -> str:
         """
@@ -181,26 +186,34 @@ CMD ["python", "/app/{persona_path}/{launch_script}"]
         rel_persona_path = str(full_persona_path)
         dockerfile_content = self._generate_dockerfile(rel_persona_path, launch_script)
         
-        # Create temporary Dockerfile
-        temp_dockerfile = Path("/tmp/Dockerfile")
-        temp_dockerfile.write_text(dockerfile_content)
-        
-        # Get repo root (assumes we're running from repo root or subdirectory)
-        repo_root = Path.cwd()
-        if not (repo_root / "uatu_genesis_engine").exists():
-            # Try parent directories
-            for parent in Path.cwd().parents:
-                if (parent / "uatu_genesis_engine").exists():
-                    repo_root = parent
-                    break
-        
-        # Upload Dockerfile
-        api.upload_file(
-            path_or_fileobj=str(temp_dockerfile),
-            path_in_repo="Dockerfile",
-            repo_id=space_id,
-            repo_type="space"
-        )
+        # Create temporary Dockerfile using secure tempfile
+        temp_dockerfile = None
+        try:
+            # Use tempfile for secure cross-platform temporary file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.Dockerfile', delete=False) as tf:
+                tf.write(dockerfile_content)
+                temp_dockerfile = Path(tf.name)
+            
+            # Get repo root (assumes we're running from repo root or subdirectory)
+            repo_root = Path.cwd()
+            if not (repo_root / "uatu_genesis_engine").exists():
+                # Try parent directories
+                for parent in Path.cwd().parents:
+                    if (parent / "uatu_genesis_engine").exists():
+                        repo_root = parent
+                        break
+            
+            # Upload Dockerfile
+            api.upload_file(
+                path_or_fileobj=str(temp_dockerfile),
+                path_in_repo="Dockerfile",
+                repo_id=space_id,
+                repo_type="space"
+            )
+        finally:
+            # Clean up temp file
+            if temp_dockerfile and temp_dockerfile.exists():
+                temp_dockerfile.unlink()
         
         # Upload persona directory
         api.upload_folder(
@@ -240,10 +253,6 @@ CMD ["python", "/app/{persona_path}/{launch_script}"]
                 repo_id=space_id,
                 repo_type="space"
             )
-        
-        # Clean up temp file
-        if temp_dockerfile.exists():
-            temp_dockerfile.unlink()
         
         # Return Space URL
         space_url = f"https://huggingface.co/spaces/{space_id}"

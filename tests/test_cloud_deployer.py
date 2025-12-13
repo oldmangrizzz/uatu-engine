@@ -76,10 +76,16 @@ class TestCloudDeployer:
     @patch('uatu_genesis_engine.deployment.cloud_deployer.HfApi')
     def test_check_or_create_space_new(self, mock_hf_api):
         """Test _check_or_create_space creates new space if it doesn't exist."""
+        from huggingface_hub.utils import HfHubHTTPError
+        
         # Mock successful authentication
         mock_api_instance = Mock()
         mock_api_instance.whoami.return_value = {"name": "testuser"}
-        mock_api_instance.space_info.side_effect = Exception("Space not found")
+        
+        # Create a mock 404 response
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_api_instance.space_info.side_effect = HfHubHTTPError("Space not found", response=mock_response)
         mock_api_instance.create_repo.return_value = "testuser/new-space"
         mock_hf_api.return_value = mock_api_instance
         
@@ -93,6 +99,31 @@ class TestCloudDeployer:
             space_sdk="docker",
             exist_ok=True
         )
+    
+    @patch('uatu_genesis_engine.deployment.cloud_deployer.HfApi')
+    def test_check_or_create_space_non_404_error(self, mock_hf_api):
+        """Test _check_or_create_space re-raises non-404 errors."""
+        from huggingface_hub.utils import HfHubHTTPError
+        
+        # Mock successful authentication
+        mock_api_instance = Mock()
+        mock_api_instance.whoami.return_value = {"name": "testuser"}
+        
+        # Create a mock 500 response (server error)
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_api_instance.space_info.side_effect = HfHubHTTPError("Server error", response=mock_response)
+        mock_hf_api.return_value = mock_api_instance
+        
+        deployer = CloudDeployer(hf_token="valid_token")
+        
+        # Should re-raise the error instead of trying to create space
+        with pytest.raises(HfHubHTTPError) as exc_info:
+            deployer._check_or_create_space("testuser/test-space")
+        
+        assert "Server error" in str(exc_info.value)
+        # create_repo should NOT be called for non-404 errors
+        mock_api_instance.create_repo.assert_not_called()
     
     @patch('uatu_genesis_engine.deployment.cloud_deployer.HfApi')
     def test_generate_dockerfile(self, mock_hf_api):
@@ -223,10 +254,16 @@ class TestCloudDeployer:
     @patch('uatu_genesis_engine.deployment.cloud_deployer.HfApi')
     def test_deploy_persona_auto_space_name(self, mock_hf_api, tmp_path):
         """Test deploy_persona auto-generates space name when not provided."""
+        from huggingface_hub.utils import HfHubHTTPError
+        
         # Mock successful authentication
         mock_api_instance = Mock()
         mock_api_instance.whoami.return_value = {"name": "testuser", "id": "testuser"}
-        mock_api_instance.space_info.side_effect = Exception("Not found")
+        
+        # Create a mock 404 response
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_api_instance.space_info.side_effect = HfHubHTTPError("Not found", response=mock_response)
         mock_api_instance.create_repo.return_value = "testuser/Test-Persona-Node"
         mock_hf_api.return_value = mock_api_instance
         
@@ -243,7 +280,6 @@ class TestCloudDeployer:
         deployer = CloudDeployer(hf_token="valid_token")
         
         with patch('pathlib.Path.cwd', return_value=tmp_path), \
-             patch('pathlib.Path.write_text'), \
              patch('pathlib.Path.unlink'):
             
             url = deployer.deploy_persona(persona_path=str(persona_dir))
