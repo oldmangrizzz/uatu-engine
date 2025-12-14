@@ -1,4 +1,4 @@
-# Lucius Fox Digital Person Framework 🌌
+#The Uatu Multiversal Engine for Digital Person Instantiation.  🌌
 ## The Workshop - GrizzlyMedicine R&D
 
 ## 🚀 Digital Person Architecture
