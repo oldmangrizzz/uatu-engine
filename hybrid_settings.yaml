@@ -1,0 +1,176 @@
+# Hybrid Settings Configuration
+# Configuration for Uatu Genesis Engine subsystems
+# Allows switching between Local and Cloud endpoints without code changes
+
+# =============================================================================
+# CONVEX STATE LOGGER CONFIGURATION
+# =============================================================================
+convex:
+  # Mode: "local", "cloud", or "mock"
+  mode: "mock"
+  
+  # Local Convex instance (development)
+  local:
+    url: "http://localhost:3210"
+    api_key: null
+    
+  # Cloud Convex instance (production)
+  cloud:
+    url: "${CONVEX_URL}"  # Set via environment variable
+    api_key: "${CONVEX_API_KEY}"  # Set via environment variable
+    
+  # Logging configuration
+  logging:
+    batch_size: 10
+    flush_interval_seconds: 5.0
+    enable_local_backup: true
+    local_backup_path: "./logs/state_backup"
+
+# =============================================================================
+# GRAPHMERT CLIENT CONFIGURATION
+# =============================================================================
+graphmert:
+  # Mode: "local", "cloud", or "mock"
+  mode: "mock"
+  
+  # Local GraphMERT instance (development)
+  local:
+    url: "http://localhost:8080/api/extract"
+    api_key: null
+    
+  # Cloud GraphMERT instance (production)
+  cloud:
+    url: "${GRAPHMERT_URL}"  # Set via environment variable
+    api_key: "${GRAPHMERT_API_KEY}"  # Set via environment variable
+    
+  # Extraction configuration
+  extraction:
+    confidence_threshold: 0.6
+    max_triples_per_request: 50
+    timeout_seconds: 5.0
+
+# =============================================================================
+# NEUROTRANSMITTER ENGINE CONFIGURATION
+# =============================================================================
+neurotransmitter:
+  # Initial state values (0.0-1.0)
+  initial_state:
+    dopamine: 0.5
+    serotonin: 0.5
+    cortisol: 0.3
+    
+  # Decay rates (per second)
+  decay_rates:
+    dopamine: 0.999
+    serotonin: 0.9995
+    cortisol: 0.998
+    
+  # Baseline values (what emotions gravitate toward)
+  baselines:
+    dopamine: 0.5
+    serotonin: 0.6
+    cortisol: 0.2
+    
+  # Threshold values for flag triggering
+  thresholds:
+    cortisol_defensive: 0.9
+    dopamine_high_motivation: 0.8
+    serotonin_instability: 0.3
+    balanced_range_min: 0.4
+    balanced_range_max: 0.6
+
+# =============================================================================
+# DIALECTIC INFERENCE CONFIGURATION
+# =============================================================================
+dialectic:
+  # Whether to enable dialectical reasoning
+  enabled: true
+  
+  # Whether to log dialectical chains
+  enable_logging: true
+  
+  # Bias balance for synthesis (0.0 = fully objective, 1.0 = fully biased)
+  default_bias_balance: 0.6
+  
+  # Whether to use synthesis as final output
+  use_synthesis_output: true
+
+# =============================================================================
+# SOUL ANCHOR LEDGER CONFIGURATION
+# =============================================================================
+soul_anchor:
+  # Whether to enforce cryptographic verification on boot
+  enforce_verification: true
+  
+  # Whether to refuse boot on tampered anchor
+  refuse_boot_on_tamper: true
+  
+  # Hash algorithm
+  hash_algorithm: "sha256"
+
+# =============================================================================
+# AGENT LOOP INTEGRATION CONFIGURATION
+# =============================================================================
+agent_loop:
+  # Enable/disable each subsystem in the agent loop
+  enable_graphmert_filter: true
+  enable_neurotransmitter_updates: true
+  enable_dialectic_reasoning: true
+  enable_convex_logging: true
+  
+  # Whether to use triples for reasoning (vs raw text)
+  reason_on_triples: true
+  
+  # Whether to include emotional state in LLM context
+  include_emotional_context: false  # Silent DPM - no user-facing display
+  
+  # Whether to include dialectical chain in response
+  include_dialectic_metadata: false  # Black box - no user-facing display
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+logging:
+  # Log level: "DEBUG", "INFO", "WARNING", "ERROR"
+  level: "INFO"
+  
+  # Whether to log to file
+  enable_file_logging: true
+  
+  # Log file path
+  log_file_path: "./logs/uatu_engine.log"
+  
+  # Whether to log to console
+  enable_console_logging: true
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+security:
+  # Whether to enable security event logging
+  enable_security_logging: true
+  
+  # Toxicity threshold for triggering defensive posture
+  toxicity_threshold: 0.7
+  
+  # Whether to auto-escalate high-toxicity inputs
+  auto_escalate_toxic_inputs: true
+
+# =============================================================================
+# PERFORMANCE CONFIGURATION
+# =============================================================================
+performance:
+  # Maximum time to wait for GraphMERT extraction (seconds)
+  graphmert_timeout: 5.0
+  
+  # Maximum time to wait for Convex flush (seconds)
+  convex_flush_timeout: 3.0
+  
+  # Whether to run subsystems asynchronously
+  async_subsystems: true
+  
+  # Maximum history length for dialectical chains
+  max_dialectic_history: 100
+  
+  # Maximum history length for neurotransmitter updates
+  max_neurotransmitter_history: 500

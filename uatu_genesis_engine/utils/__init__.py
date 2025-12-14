@@ -4,6 +4,17 @@ Utility functions for the Uatu Genesis Engine.
 import re
 from typing import Optional
 
+# Import new utility modules
+from .graphmert_client import (
+    GraphMERTClient,
+    FactTriple,
+    GraphMERTResponse
+)
+from .hybrid_config import (
+    HybridConfig,
+    get_config
+)
+
 
 def sanitize_filename(filename: str) -> str:
     """
