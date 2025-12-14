@@ -48,6 +48,7 @@ data/
 *.json.bak
 graphs/
 output/
+logs/
 
 # OS
 .DS_Store

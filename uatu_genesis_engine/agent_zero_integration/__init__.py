@@ -10,6 +10,7 @@ Core Subsystems:
 - NeurotransmitterEngine: Mathematical emotion modeling (Silent DPM)
 - DialecticInference: Zord Theory cognitive engine (thesis/antithesis/synthesis)
 - ConvexStateLogger: Async black box recorder for state persistence
+- HybridMindIntegration: Neural bridge that wires all subsystems together
 - TTSVoiceAdapter: Voice manifest generation for TTS
 """
 from .soul_anchor_loader import SoulAnchorLoader
@@ -43,6 +44,11 @@ from .convex_state_logger import (
     get_convex_schema_export
 )
 from .tts_voice_adapter import TTSVoiceAdapter
+from .hybrid_mind_integration import (
+    HybridMindIntegration,
+    HybridMindContext,
+    HybridMindState
+)
 
 __all__ = [
     # Core loaders and instantiation
@@ -78,5 +84,10 @@ __all__ = [
     'get_convex_schema_export',
     
     # Voice adaptation
-    'TTSVoiceAdapter'
+    'TTSVoiceAdapter',
+    
+    # Hybrid mind integration
+    'HybridMindIntegration',
+    'HybridMindContext',
+    'HybridMindState'
 ]
