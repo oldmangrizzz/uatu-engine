@@ -196,7 +196,10 @@ class AgentInstantiator:
         
         # Serialize soul anchor data for the launch script
         import json
-        soul_anchor_json = json.dumps(self.soul_anchor, indent=2)
+        # Use json.dumps with ensure_ascii to prevent injection via unicode
+        soul_anchor_json = json.dumps(self.soul_anchor, indent=2, ensure_ascii=True)
+        # Escape any triple quotes to prevent breaking out of the string literal
+        soul_anchor_json = soul_anchor_json.replace("'''", r"\'\'\'")
         
         # Use template with safe string formatting to avoid injection
         script_content = '''#!/usr/bin/env python3

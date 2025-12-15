@@ -8,11 +8,21 @@ import os
 import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
-from huggingface_hub import InferenceClient
-from huggingface_hub.utils import HfHubHTTPError
+
+try:
+    from huggingface_hub import InferenceClient
+    from huggingface_hub.utils import HfHubHTTPError
+    HF_AVAILABLE = True
+except ImportError:
+    HF_AVAILABLE = False
+    InferenceClient = None
+    HfHubHTTPError = None
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+# Constants
+DALLE_MAX_PROMPT_LENGTH = 4000  # DALL-E has prompt length limits
 
 
 class RSIGenerator:
@@ -178,6 +188,10 @@ Identity: {persona_name}"""
         Returns:
             True if successful, False otherwise
         """
+        if not HF_AVAILABLE:
+            logger.error("Hugging Face Hub not available, cannot use Flux")
+            return False
+        
         try:
             # Get HF token from environment
             hf_token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN")
@@ -254,7 +268,7 @@ Identity: {persona_name}"""
             # Generate image
             response = client.images.generate(
                 model="dall-e-3",
-                prompt=prompt[:4000],  # DALL-E has prompt length limits
+                prompt=prompt[:DALLE_MAX_PROMPT_LENGTH],
                 size="1024x1024",
                 quality="hd",
                 n=1
@@ -263,7 +277,11 @@ Identity: {persona_name}"""
             # Download and save the image
             image_url = response.data[0].url
             
-            import requests
+            try:
+                import requests
+            except ImportError:
+                logger.error("requests module not available for image download")
+                return False
             img_response = requests.get(image_url, timeout=30)
             img_response.raise_for_status()
             
