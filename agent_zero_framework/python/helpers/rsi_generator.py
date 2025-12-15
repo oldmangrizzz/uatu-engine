@@ -265,10 +265,15 @@ Identity: {persona_name}"""
             # Initialize OpenAI client
             client = OpenAI(api_key=openai_key)
             
+            # Truncate prompt if necessary and log it
+            truncated_prompt = prompt[:DALLE_MAX_PROMPT_LENGTH]
+            if len(prompt) > DALLE_MAX_PROMPT_LENGTH:
+                logger.warning(f"Prompt truncated from {len(prompt)} to {DALLE_MAX_PROMPT_LENGTH} characters for DALL-E")
+            
             # Generate image
             response = client.images.generate(
                 model="dall-e-3",
-                prompt=prompt[:DALLE_MAX_PROMPT_LENGTH],
+                prompt=truncated_prompt,
                 size="1024x1024",
                 quality="hd",
                 n=1
@@ -276,6 +281,11 @@ Identity: {persona_name}"""
             
             # Download and save the image
             image_url = response.data[0].url
+            
+            # Validate URL is from OpenAI domain to prevent SSRF
+            if not image_url.startswith("https://oaidalleapiprodscus.blob.core.windows.net/"):
+                logger.error(f"Unexpected image URL domain: {image_url}")
+                return False
             
             try:
                 import requests
