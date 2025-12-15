@@ -241,7 +241,8 @@ def genesis_sequence():
             from python.helpers.rsi_generator import RSIGenerator
             
             # Load soul anchor data
-            soul_anchor = json.loads('''{soul_anchor_json}''')
+            soul_anchor_json_str = """{soul_anchor_json}"""
+            soul_anchor = json.loads(soul_anchor_json_str)
             
             # Generate physical description
             print("> Step 1: Generating physical self-description...")
