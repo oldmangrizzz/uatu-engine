@@ -51,10 +51,13 @@ def secure_boot_sequence():
                     continue
                 if "=" in line:
                     key, value = line.split("=", 1)
-                    # Remove quotes if present
-                    value = value.strip('"').strip("'")
-                    os.environ[key] = value
-                    count += 1
+                    # Strip whitespace and remove quotes if present
+                    key = key.strip()
+                    value = value.strip().strip('"').strip("'")
+                    # Validate key format (alphanumeric and underscores only)
+                    if key and key.replace('_', '').isalnum():
+                        os.environ[key] = value
+                        count += 1
         
         print(f">> {count} KEYS INJECTED SUCCESSFULLY.")
         time.sleep(1)
@@ -109,9 +112,18 @@ def secure_boot_sequence():
         if gitignore_path.exists():
             with open(gitignore_path, "r", encoding='utf-8') as f:
                 content = f.read()
-            # Check if .env is already in gitignore (as a line)
+            # Check if .env is already in gitignore (look for uncommented lines)
             lines = content.split('\n')
-            has_env = any(line.strip() in ['.env', '*.env', '**/.env'] for line in lines)
+            has_env = False
+            for line in lines:
+                stripped = line.strip()
+                # Skip comments
+                if stripped.startswith('#'):
+                    continue
+                # Check for .env patterns (with or without leading slash/wildcards)
+                if stripped in ['.env', '*.env', '**/.env', '/.env']:
+                    has_env = True
+                    break
             if not has_env:
                 with open(gitignore_path, "a", encoding='utf-8') as f:
                     f.write("\n# Local Credential Vault\n.env\n")
