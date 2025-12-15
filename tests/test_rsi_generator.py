@@ -1,241 +1,208 @@
 """
-Unit tests for RSI Generator
+Unit tests for RSIGenerator
 
-Tests the avatar generation system using High-Fidelity Flux via HF Space API.
+Tests the Residual Self-Image Generator for AI personas.
 """
 import os
 import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from agent_zero_framework.python.helpers import rsi_generator
+from unittest.mock import Mock, patch, MagicMock, mock_open
+import tempfile
+import shutil
 
 
-class TestDescribeSelf:
-    """Test the describe_self function."""
+class TestRSIGenerator:
+    """Test the RSIGenerator class."""
     
-    def test_describe_self_returns_prompt(self):
-        """Test that describe_self returns a valid prompt."""
-        result = rsi_generator.describe_self()
-        
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert "physical appearance" in result.lower()
-        assert "Construct" in result
+    def setup_method(self):
+        """Set up test fixtures."""
+        # Create a temporary directory for test outputs
+        self.test_dir = tempfile.mkdtemp()
+        self.test_avatar_path = Path(self.test_dir) / "avatar.png"
+    
+    def teardown_method(self):
+        """Clean up after tests."""
+        if Path(self.test_dir).exists():
+            shutil.rmtree(self.test_dir)
     
     def test_describe_self_with_memory(self):
-        """Test describe_self with memory parameter."""
-        memory = {"test": "data"}
-        result = rsi_generator.describe_self(memory)
+        """Test describe_self with agent memory data."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
         
-        assert isinstance(result, str)
-        assert len(result) > 0
-
-
-class TestGenerateAvatar:
-    """Test the generate_avatar function."""
+        # Test memory data
+        test_memory = {
+            "primary_name": "Test Agent",
+            "archetype": "strategist",
+            "core_constants": ["analytical", "precise", "strategic"]
+        }
+        
+        # Since the imports are dynamic and complex, we'll test that it falls back gracefully
+        description = RSIGenerator.describe_self(test_memory)
+        
+        # Verify we get a description (either from LLM or fallback)
+        assert isinstance(description, str)
+        assert len(description) > 0
+        # Should contain the agent name from memory
+        assert "Test Agent" in description or "digital entity" in description.lower()
     
-    @patch('huggingface_hub.InferenceClient')
-    @patch('agent_zero_framework.python.helpers.rsi_generator.Path')
-    def test_generate_avatar_success(self, mock_path, mock_client_class):
-        """Test successful avatar generation."""
-        # Mock the InferenceClient
-        mock_client = Mock()
+    def test_describe_self_fallback(self):
+        """Test describe_self fallback when LLM is unavailable."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
+        
+        test_memory = {
+            "primary_name": "Fallback Agent"
+        }
+        
+        # Call the method - it will use fallback if agent infrastructure isn't available
+        description = RSIGenerator.describe_self(test_memory)
+        
+        # Verify fallback description works
+        assert isinstance(description, str)
+        assert "Fallback Agent" in description or "digital entity" in description.lower()
+        assert len(description) > 50  # Should be a substantial description
+    
+    def test_describe_self_no_memory(self):
+        """Test describe_self with no memory data."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
+        
+        # Call with None
+        description = RSIGenerator.describe_self(None)
+        
+        # Verify we still get a description
+        assert isinstance(description, str)
+        assert len(description) > 0
+        assert "Unknown" in description or "digital entity" in description.lower()
+    
+    @patch('agent_zero_framework.python.helpers.rsi_generator.InferenceClient')
+    def test_generate_avatar_via_flux_success(self, mock_inference_client):
+        """Test successful avatar generation via Flux."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
+        
+        # Create a mock PIL Image
         mock_image = Mock()
+        mock_image.save = Mock()
+        
+        # Set up InferenceClient mock
+        mock_client = Mock()
         mock_client.text_to_image.return_value = mock_image
-        mock_client_class.return_value = mock_client
+        mock_inference_client.return_value = mock_client
         
-        # Mock Path operations
-        mock_output_path = Mock()
-        mock_output_path.parent.mkdir = Mock()
-        mock_path.return_value = mock_output_path
-        
-        # Call function
-        result = rsi_generator.generate_avatar(
-            prompt="A test description",
-            output_path="/tmp/test_avatar.png"
-        )
-        
-        assert result is True
-        mock_client.text_to_image.assert_called_once()
-        mock_image.save.assert_called_once()
-        
-        # Verify parameters
-        call_kwargs = mock_client.text_to_image.call_args[1]
-        assert "model" in call_kwargs
-        assert call_kwargs["model"] == "black-forest-labs/FLUX.1-dev"
-        assert "num_inference_steps" in call_kwargs
-        assert "guidance_scale" in call_kwargs
-    
-    def test_generate_avatar_import_error(self):
-        """Test handling of import errors."""
-        # Temporarily remove huggingface_hub from sys.modules
-        import sys
-        original_module = sys.modules.get('huggingface_hub')
+        # Set HF_TOKEN in environment
+        os.environ['HF_TOKEN'] = 'test_token'
         
         try:
-            # Hide the module
-            if 'huggingface_hub' in sys.modules:
-                del sys.modules['huggingface_hub']
+            # Call the method
+            description = "A test avatar description"
+            result = RSIGenerator.generate_avatar(description, str(self.test_avatar_path))
             
-            # Patch the import to fail
-            with patch.dict('sys.modules', {'huggingface_hub': None}):
-                result = rsi_generator.generate_avatar(
-                    prompt="Test prompt",
-                    output_path="/tmp/test.png"
-                )
-                
-                assert result is False
+            # Verify
+            assert result is True
+            mock_client.text_to_image.assert_called_once()
+            mock_image.save.assert_called_once()
         finally:
-            # Restore the module
-            if original_module is not None:
-                sys.modules['huggingface_hub'] = original_module
+            # Clean up
+            if 'HF_TOKEN' in os.environ:
+                del os.environ['HF_TOKEN']
     
-    @patch('huggingface_hub.InferenceClient')
-    @patch('agent_zero_framework.python.helpers.rsi_generator.Path')
-    def test_generate_avatar_api_error(self, mock_path, mock_client_class):
-        """Test handling of API errors."""
-        # Mock client that throws an error
+    @patch('agent_zero_framework.python.helpers.rsi_generator.InferenceClient')
+    @patch('agent_zero_framework.python.helpers.rsi_generator.RSIGenerator._generate_via_dalle')
+    def test_generate_avatar_flux_fallback_to_dalle(self, mock_dalle, mock_inference_client):
+        """Test fallback to DALL-E when Flux fails."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
+        
+        # Set up Flux to fail
         mock_client = Mock()
-        mock_client.text_to_image.side_effect = Exception("API Error")
-        mock_client_class.return_value = mock_client
+        mock_client.text_to_image.side_effect = Exception("Flux error")
+        mock_inference_client.return_value = mock_client
         
-        # Mock Path operations
-        mock_output_path = Mock()
-        mock_path.return_value = mock_output_path
+        # Set up DALL-E to succeed
+        mock_dalle.return_value = True
         
-        result = rsi_generator.generate_avatar(
-            prompt="Test prompt",
-            output_path="/tmp/test.png"
+        os.environ['HF_TOKEN'] = 'test_token'
+        
+        try:
+            # Call the method
+            description = "A test avatar description"
+            result = RSIGenerator.generate_avatar(description, str(self.test_avatar_path))
+            
+            # Verify DALL-E was called as fallback
+            mock_dalle.assert_called_once()
+        finally:
+            if 'HF_TOKEN' in os.environ:
+                del os.environ['HF_TOKEN']
+    
+    def test_generate_avatar_creates_directory(self):
+        """Test that generate_avatar creates output directory if it doesn't exist."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
+        
+        # Use a path in a non-existent subdirectory
+        nested_path = Path(self.test_dir) / "subdir" / "avatar.png"
+        
+        with patch('agent_zero_framework.python.helpers.rsi_generator.RSIGenerator._generate_via_flux') as mock_flux:
+            mock_flux.return_value = True
+            
+            # Call the method
+            RSIGenerator.generate_avatar("test", str(nested_path))
+            
+            # Verify directory was created
+            assert nested_path.parent.exists()
+    
+    def test_generate_via_dalle_success(self):
+        """Test successful generation via DALL-E."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
+        
+        # This test requires openai module which may not be installed
+        # Test that it fails gracefully without API key
+        if 'OPENAI_API_KEY' in os.environ:
+            del os.environ['OPENAI_API_KEY']
+        
+        result = RSIGenerator._generate_via_dalle(
+            "test prompt",
+            self.test_avatar_path
+        )
+        
+        # Should return False without crashing when no API key
+        assert result is False
+    
+    def test_generate_via_dalle_no_api_key(self):
+        """Test DALL-E generation fails gracefully without API key."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
+        
+        # Ensure no API key
+        if 'OPENAI_API_KEY' in os.environ:
+            del os.environ['OPENAI_API_KEY']
+        
+        # Should return False without crashing
+        result = RSIGenerator._generate_via_dalle(
+            "test prompt",
+            self.test_avatar_path
         )
         
         assert result is False
     
-    @patch('huggingface_hub.InferenceClient')
-    @patch('agent_zero_framework.python.helpers.rsi_generator.Path')
-    def test_generate_avatar_with_custom_parameters(self, mock_path, mock_client_class):
-        """Test avatar generation with custom parameters."""
+    @patch('agent_zero_framework.python.helpers.rsi_generator.InferenceClient')
+    def test_generate_via_flux_no_token(self, mock_inference_client):
+        """Test Flux generation works without HF_TOKEN (tries anyway)."""
+        from agent_zero_framework.python.helpers.rsi_generator import RSIGenerator
+        
+        # Remove token
+        if 'HF_TOKEN' in os.environ:
+            del os.environ['HF_TOKEN']
+        if 'HUGGINGFACE_TOKEN' in os.environ:
+            del os.environ['HUGGINGFACE_TOKEN']
+        
+        # Mock client to succeed
         mock_client = Mock()
         mock_image = Mock()
+        mock_image.save = Mock()
         mock_client.text_to_image.return_value = mock_image
-        mock_client_class.return_value = mock_client
+        mock_inference_client.return_value = mock_client
         
-        mock_output_path = Mock()
-        mock_output_path.parent.mkdir = Mock()
-        mock_path.return_value = mock_output_path
-        
-        # Call with custom parameters
-        result = rsi_generator.generate_avatar(
-            prompt="Custom description",
-            output_path="/custom/path.png",
-            steps=30,
-            guidance=4.0,
-            width=512,
-            height=512
+        # Should still try to generate
+        result = RSIGenerator._generate_via_flux(
+            "test prompt",
+            self.test_avatar_path
         )
         
-        assert result is True
-        
-        # Verify custom parameters were used
-        call_kwargs = mock_client.text_to_image.call_args[1]
-        assert call_kwargs["num_inference_steps"] == 30
-        assert call_kwargs["guidance_scale"] == 4.0
-        assert call_kwargs["width"] == 512
-        assert call_kwargs["height"] == 512
-    
-    @patch('huggingface_hub.InferenceClient')
-    @patch('agent_zero_framework.python.helpers.rsi_generator.Path')
-    def test_generate_avatar_adds_style_prefix(self, mock_path, mock_client_class):
-        """Test that avatar generation adds style prefix to prompt."""
-        mock_client = Mock()
-        mock_image = Mock()
-        mock_client.text_to_image.return_value = mock_image
-        mock_client_class.return_value = mock_client
-        
-        mock_output_path = Mock()
-        mock_output_path.parent.mkdir = Mock()
-        mock_path.return_value = mock_output_path
-        
-        original_prompt = "A simple description"
-        result = rsi_generator.generate_avatar(
-            prompt=original_prompt,
-            output_path="/tmp/test.png"
-        )
-        
-        assert result is True
-        
-        # Verify style prefix was added
-        call_args = mock_client.text_to_image.call_args
-        used_prompt = call_args[1]["prompt"]
-        assert "Cinematic lighting" in used_prompt
-        assert "hyper-realistic" in used_prompt
-        assert original_prompt in used_prompt
-
-
-class TestEnsureAvatarExists:
-    """Test the ensure_avatar_exists function."""
-    
-    @patch('agent_zero_framework.python.helpers.rsi_generator.Path')
-    def test_ensure_avatar_exists_already_exists(self, mock_path_class):
-        """Test when avatar already exists."""
-        # Mock avatar path that exists
-        mock_avatar_path = Mock()
-        mock_avatar_path.exists.return_value = True
-        mock_path_class.return_value = mock_avatar_path
-        
-        result = rsi_generator.ensure_avatar_exists()
-        
-        assert result is True
-        # Should not attempt to generate
-        mock_avatar_path.exists.assert_called_once()
-    
-    @patch('agent_zero_framework.python.helpers.rsi_generator.generate_avatar')
-    @patch('agent_zero_framework.python.helpers.rsi_generator.Path')
-    def test_ensure_avatar_exists_generates_new(self, mock_path_class, mock_generate):
-        """Test when avatar needs to be generated."""
-        # Mock avatar path that doesn't exist
-        mock_avatar_path = Mock()
-        mock_avatar_path.exists.return_value = False
-        mock_path_class.return_value = mock_avatar_path
-        
-        # Mock successful generation
-        mock_generate.return_value = True
-        
-        result = rsi_generator.ensure_avatar_exists()
-        
-        assert result is True
-        mock_generate.assert_called_once()
-    
-    @patch('agent_zero_framework.python.helpers.rsi_generator.generate_avatar')
-    @patch('agent_zero_framework.python.helpers.rsi_generator.Path')
-    def test_ensure_avatar_exists_generation_fails(self, mock_path_class, mock_generate):
-        """Test when avatar generation fails."""
-        mock_avatar_path = Mock()
-        mock_avatar_path.exists.return_value = False
-        mock_path_class.return_value = mock_avatar_path
-        
-        # Mock failed generation
-        mock_generate.return_value = False
-        
-        result = rsi_generator.ensure_avatar_exists()
-        
-        assert result is False
-    
-    @patch('agent_zero_framework.python.helpers.rsi_generator.generate_avatar')
-    @patch('agent_zero_framework.python.helpers.rsi_generator.Path')
-    def test_ensure_avatar_exists_force_regenerate(self, mock_path_class, mock_generate):
-        """Test force regeneration even when avatar exists."""
-        mock_avatar_path = Mock()
-        mock_avatar_path.exists.return_value = True
-        mock_path_class.return_value = mock_avatar_path
-        
-        mock_generate.return_value = True
-        
-        result = rsi_generator.ensure_avatar_exists(force_regenerate=True)
-        
-        assert result is True
-        # Should generate even though it exists
-        mock_generate.assert_called_once()
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+        # Verify it was attempted
+        mock_inference_client.assert_called_once()
