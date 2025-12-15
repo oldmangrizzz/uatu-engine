@@ -30,9 +30,10 @@ def secure_boot_sequence():
     print("="*60)
     
     # 1. Define Vault Paths
-    # We look for .env in the root agent_zero folder to share keys between agents,
-    # or the current folder for isolation. Let's default to repo root for ease.
-    repo_root = Path.cwd()
+    # Navigate up from personas/tony_stark to agent_zero_framework, then to repo root
+    persona_dir = Path(__file__).parent
+    agent_zero_dir = persona_dir.parent.parent
+    repo_root = agent_zero_dir.parent
     vault_path = repo_root / ".env"
     
     # 2. Check for existing vault
@@ -45,7 +46,10 @@ def secure_boot_sequence():
         with open(vault_path, "r") as f:
             for line in f:
                 line = line.strip()
-                if "=" in line and not line.startswith("#"):
+                # Skip empty lines and comments
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
                     key, value = line.split("=", 1)
                     # Remove quotes if present
                     value = value.strip('"').strip("'")
@@ -72,36 +76,46 @@ def secure_boot_sequence():
     convex_url = input("4. Convex Deployment URL (The Memory): ").strip()
     convex_key = input("5. Convex Admin Key (Optional - for Admin): ").strip()
 
-    # Inject into current session immediately
-    if or_key: os.environ["OPENROUTER_API_KEY"] = or_key
-    if hf_key: 
-        os.environ["HF_TOKEN"] = hf_key
-        os.environ["HUGGING_FACE_HUB_TOKEN"] = hf_key
-    if gh_key: os.environ["GITHUB_TOKEN"] = gh_key
-    if convex_url: os.environ["CONVEX_URL"] = convex_url
-    if convex_key: os.environ["CONVEX_ADMIN_KEY"] = convex_key
+    # Inject into current session immediately (only if non-empty)
+    if or_key.strip(): os.environ["OPENROUTER_API_KEY"] = or_key.strip()
+    if hf_key.strip(): 
+        os.environ["HF_TOKEN"] = hf_key.strip()
+        os.environ["HUGGING_FACE_HUB_TOKEN"] = hf_key.strip()
+    if gh_key.strip(): os.environ["GITHUB_TOKEN"] = gh_key.strip()
+    if convex_url.strip(): os.environ["CONVEX_URL"] = convex_url.strip()
+    if convex_key.strip(): os.environ["CONVEX_ADMIN_KEY"] = convex_key.strip()
 
     # 4. Save to Vault
     save = input("\n>> SAVE CREDENTIALS TO LOCAL VAULT (.env)? [Y/N]: ").strip().upper()
     if save == "Y":
         with open(vault_path, "w") as f:
-            f.write(f"OPENROUTER_API_KEY={or_key}\n")
-            f.write(f"HF_TOKEN={hf_key}\n")
-            f.write(f"HUGGING_FACE_HUB_TOKEN={hf_key}\n")
-            f.write(f"GITHUB_TOKEN={gh_key}\n")
-            f.write(f"CONVEX_URL={convex_url}\n")
-            f.write(f"CONVEX_ADMIN_KEY={convex_key}\n")
+            # Write credentials with quotes to handle special characters
+            if or_key.strip():
+                f.write(f'OPENROUTER_API_KEY="{or_key.strip()}"\n')
+            if hf_key.strip():
+                f.write(f'HF_TOKEN="{hf_key.strip()}"\n')
+                f.write(f'HUGGING_FACE_HUB_TOKEN="{hf_key.strip()}"\n')
+            if gh_key.strip():
+                f.write(f'GITHUB_TOKEN="{gh_key.strip()}"\n')
+            if convex_url.strip():
+                f.write(f'CONVEX_URL="{convex_url.strip()}"\n')
+            if convex_key.strip():
+                f.write(f'CONVEX_ADMIN_KEY="{convex_key.strip()}"\n')
         
         print(">> VAULT CREATED.")
 
         # 5. Secure the Vault (Update .gitignore)
         gitignore_path = repo_root / ".gitignore"
         if gitignore_path.exists():
-            with open(gitignore_path, "r+") as f:
+            with open(gitignore_path, "r") as f:
                 content = f.read()
-                if ".env" not in content:
+            # Check if .env is already in gitignore (as a line)
+            lines = content.split('\n')
+            has_env = any(line.strip() in ['.env', '*.env', '**/.env'] for line in lines)
+            if not has_env:
+                with open(gitignore_path, "a") as f:
                     f.write("\n# Local Credential Vault\n.env\n")
-                    print(">> .env ADDED TO .gitignore (SAFE FROM UPLOAD)")
+                print(">> .env ADDED TO .gitignore (SAFE FROM UPLOAD)")
         else:
             # Create gitignore if missing
             with open(gitignore_path, "w") as f:
