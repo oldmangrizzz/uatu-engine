@@ -43,7 +43,7 @@ def secure_boot_sequence():
         
         # Load env vars manually to ensure they inject into os.environ
         count = 0
-        with open(vault_path, "r") as f:
+        with open(vault_path, "r", encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
                 # Skip empty lines and comments
@@ -77,48 +77,48 @@ def secure_boot_sequence():
     convex_key = input("5. Convex Admin Key (Optional - for Admin): ").strip()
 
     # Inject into current session immediately (only if non-empty)
-    if or_key.strip(): os.environ["OPENROUTER_API_KEY"] = or_key.strip()
-    if hf_key.strip(): 
-        os.environ["HF_TOKEN"] = hf_key.strip()
-        os.environ["HUGGING_FACE_HUB_TOKEN"] = hf_key.strip()
-    if gh_key.strip(): os.environ["GITHUB_TOKEN"] = gh_key.strip()
-    if convex_url.strip(): os.environ["CONVEX_URL"] = convex_url.strip()
-    if convex_key.strip(): os.environ["CONVEX_ADMIN_KEY"] = convex_key.strip()
+    if or_key: os.environ["OPENROUTER_API_KEY"] = or_key
+    if hf_key: 
+        os.environ["HF_TOKEN"] = hf_key
+        os.environ["HUGGING_FACE_HUB_TOKEN"] = hf_key
+    if gh_key: os.environ["GITHUB_TOKEN"] = gh_key
+    if convex_url: os.environ["CONVEX_URL"] = convex_url
+    if convex_key: os.environ["CONVEX_ADMIN_KEY"] = convex_key
 
     # 4. Save to Vault
     save = input("\n>> SAVE CREDENTIALS TO LOCAL VAULT (.env)? [Y/N]: ").strip().upper()
     if save == "Y":
-        with open(vault_path, "w") as f:
+        with open(vault_path, "w", encoding='utf-8') as f:
             # Write credentials with quotes to handle special characters
-            if or_key.strip():
-                f.write(f'OPENROUTER_API_KEY="{or_key.strip()}"\n')
-            if hf_key.strip():
-                f.write(f'HF_TOKEN="{hf_key.strip()}"\n')
-                f.write(f'HUGGING_FACE_HUB_TOKEN="{hf_key.strip()}"\n')
-            if gh_key.strip():
-                f.write(f'GITHUB_TOKEN="{gh_key.strip()}"\n')
-            if convex_url.strip():
-                f.write(f'CONVEX_URL="{convex_url.strip()}"\n')
-            if convex_key.strip():
-                f.write(f'CONVEX_ADMIN_KEY="{convex_key.strip()}"\n')
+            if or_key:
+                f.write(f'OPENROUTER_API_KEY="{or_key}"\n')
+            if hf_key:
+                f.write(f'HF_TOKEN="{hf_key}"\n')
+                f.write(f'HUGGING_FACE_HUB_TOKEN="{hf_key}"\n')
+            if gh_key:
+                f.write(f'GITHUB_TOKEN="{gh_key}"\n')
+            if convex_url:
+                f.write(f'CONVEX_URL="{convex_url}"\n')
+            if convex_key:
+                f.write(f'CONVEX_ADMIN_KEY="{convex_key}"\n')
         
         print(">> VAULT CREATED.")
 
         # 5. Secure the Vault (Update .gitignore)
         gitignore_path = repo_root / ".gitignore"
         if gitignore_path.exists():
-            with open(gitignore_path, "r") as f:
+            with open(gitignore_path, "r", encoding='utf-8') as f:
                 content = f.read()
             # Check if .env is already in gitignore (as a line)
             lines = content.split('\n')
             has_env = any(line.strip() in ['.env', '*.env', '**/.env'] for line in lines)
             if not has_env:
-                with open(gitignore_path, "a") as f:
+                with open(gitignore_path, "a", encoding='utf-8') as f:
                     f.write("\n# Local Credential Vault\n.env\n")
                 print(">> .env ADDED TO .gitignore (SAFE FROM UPLOAD)")
         else:
             # Create gitignore if missing
-            with open(gitignore_path, "w") as f:
+            with open(gitignore_path, "w", encoding='utf-8') as f:
                 f.write(".env\n")
             print(">> .gitignore CREATED.")
             
