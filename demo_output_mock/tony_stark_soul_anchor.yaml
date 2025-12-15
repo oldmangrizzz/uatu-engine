@@ -1,0 +1,29 @@
+identity:
+  designation: Tony Stark
+  archetype: DomainCategory.ENGINEERING
+  constants:
+  - Iron Man
+  - The Merchant of Death
+  - Shell-Head
+  - The Armored Avenger
+psychodynamics:
+  core_drive: Mastery and innovation in technology
+  paradox: Balancing power, responsibility, and personal cost
+knowledge_graph:
+  nodes:
+  - DomainCategory.ENGINEERING
+  - DomainCategory.COMPUTER_SCIENCE
+  - DomainCategory.BUSINESS
+  - DomainCategory.TECHNOLOGY
+  - DomainCategory.SECURITY
+  edges:
+  - cause: Inherited Stark Industries after parents' death
+    effect: DomainCategory.ENGINEERING
+  - cause: Grew Stark Industries into weapons manufacturing giant
+    effect: DomainCategory.ENGINEERING
+  - cause: Shut down weapons division, focused on clean energy
+    effect: DomainCategory.ENGINEERING
+  - cause: Invested in Stark Tower (now Avengers Tower)
+    effect: DomainCategory.ENGINEERING
+  - cause: Development of Iron Legion and Ultron project
+    effect: DomainCategory.ENGINEERING

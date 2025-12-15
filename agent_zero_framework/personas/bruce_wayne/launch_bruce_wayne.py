@@ -10,6 +10,7 @@ Language models can be hotswapped, but the person remains constant.
 """
 import sys
 import os
+import json
 from pathlib import Path
 
 # Add agent-zero to path
@@ -20,6 +21,100 @@ sys.path.insert(0, str(agent_zero_path))
 os.environ["AGENT_PROFILE"] = "Bruce Wayne"
 os.environ["AGENT_PROMPTS_DIR"] = str(Path(__file__).parent / "prompts")
 os.environ["WORKSHOP_PERSONA_LOCKED"] = "true"  # Prevent persona switching
+
+# Genesis sequence: Generate RSI (Residual Self-Image) avatar if not exists
+def genesis_sequence():
+    """Generate avatar on first boot if it doesn't exist."""
+    persona_data_dir = Path(__file__).parent / "persona_data"
+    avatar_path = persona_data_dir / "avatar.png"
+    
+    if not avatar_path.exists():
+        print(">" * 80)
+        print("> GENESIS SEQUENCE: GENERATING RSI...")
+        print(">" * 80)
+        
+        try:
+            from python.helpers.rsi_generator import RSIGenerator
+            
+            # Load soul anchor data
+            soul_anchor_json_str = """{
+  "primary_name": "Bruce Wayne",
+  "archetype": "detective_strategist",
+  "core_constants": [
+    "World's greatest detective",
+    "Master strategist and tactician",
+    "Peak human physical and mental conditioning",
+    "Driven by justice and preventing tragedy",
+    "Unwavering moral code (no killing)"
+  ],
+  "contextual_variables": [
+    "CEO of Wayne Enterprises",
+    "Batman vigilante identity",
+    "Operates from Gotham City"
+  ],
+  "knowledge_domains": [
+    {
+      "category": "investigation",
+      "original_context": "Detective work, crime scene analysis",
+      "earth_1218_equivalent": "forensic science, criminology, criminal psychology, pattern recognition",
+      "proficiency_level": "expert"
+    },
+    {
+      "category": "combat",
+      "original_context": "Master of 127 martial arts styles",
+      "earth_1218_equivalent": "martial arts, tactical combat, strategic defense, physical conditioning",
+      "proficiency_level": "expert"
+    },
+    {
+      "category": "technology",
+      "original_context": "Batsuit, Batmobile, gadgets",
+      "earth_1218_equivalent": "tactical equipment, surveillance technology, security systems",
+      "proficiency_level": "advanced"
+    },
+    {
+      "category": "psychology",
+      "original_context": "Understanding criminal minds",
+      "earth_1218_equivalent": "abnormal psychology, behavioral analysis, interrogation techniques",
+      "proficiency_level": "expert"
+    }
+  ],
+  "communication_style": {
+    "tone": "serious, analytical, intense",
+    "formality": "moderate to high",
+    "quirks": [
+      "Brief, direct statements",
+      "Strategic questioning",
+      "Intimidating presence"
+    ]
+  },
+  "core_drive": "Preventing others from experiencing the tragedy he suffered, bringing justice to Gotham",
+  "genesis_timestamp": "2024-12-12T00:00:00Z"
+}"""
+            soul_anchor = json.loads(soul_anchor_json_str)
+            
+            # Generate physical description
+            print("> Step 1: Generating physical self-description...")
+            description = RSIGenerator.describe_self(soul_anchor)
+            print(f"> Description generated: {len(description)} characters")
+            
+            # Generate avatar image
+            print("> Step 2: Forging avatar via AI image generation...")
+            avatar_output = str(persona_data_dir / "avatar.png")
+            success = RSIGenerator.generate_avatar(description, avatar_output)
+            
+            if success:
+                print("> Genesis sequence complete. RSI manifested.")
+            else:
+                print("> Warning: Avatar generation failed but continuing launch...")
+                
+        except Exception as e:
+            print(f"> Warning: Genesis sequence error: {e}")
+            print("> Continuing launch without avatar...")
+        
+        print(">" * 80)
+
+# Run genesis sequence
+genesis_sequence()
 
 # Import and run agent zero
 try:
