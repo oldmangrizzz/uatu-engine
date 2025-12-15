@@ -127,7 +127,7 @@ class TestCloudDeployer:
     
     @patch('uatu_genesis_engine.deployment.cloud_deployer.HfApi')
     def test_generate_dockerfile(self, mock_hf_api):
-        """Test Dockerfile generation."""
+        """Test Dockerfile generation with all new features."""
         # Mock successful authentication
         mock_api_instance = Mock()
         mock_api_instance.whoami.return_value = {"name": "testuser"}
@@ -145,9 +145,57 @@ class TestCloudDeployer:
         assert "COPY agent_zero_framework" in dockerfile
         assert "COPY requirements.txt" in dockerfile
         assert "EXPOSE 7860" in dockerfile
-        assert 'CMD ["python", "/app/personas/lucius_fox/launch_lucius_fox.py"]' in dockerfile
         assert "ENV GRADIO_SERVER_NAME" in dockerfile
         assert "ENV GRADIO_SERVER_PORT=7860" in dockerfile
+        
+        # Check Phase 1: Audio drivers
+        assert "apt-get update" in dockerfile
+        assert "ffmpeg" in dockerfile
+        assert "libsndfile1" in dockerfile
+        assert "libportaudio2" in dockerfile
+        assert "git" in dockerfile
+        assert "build-essential" in dockerfile
+        
+        # Check Phase 3: Persona prompt injection
+        assert "rm -rf /app/agent_zero_framework/agents/agent0/prompts/*" in dockerfile
+        assert "COPY personas/lucius_fox/prompts/" in dockerfile
+        
+        # Check Phase 5: Genesis launch script
+        assert "COPY genesis_launch.py" in dockerfile
+        assert 'CMD ["python", "/app/personas/lucius_fox/genesis_launch.py"]' in dockerfile
+    
+    @patch('uatu_genesis_engine.deployment.cloud_deployer.HfApi')
+    def test_generate_launch_script(self, mock_hf_api):
+        """Test genesis launch script generation."""
+        # Mock successful authentication
+        mock_api_instance = Mock()
+        mock_api_instance.whoami.return_value = {"name": "testuser"}
+        mock_hf_api.return_value = mock_api_instance
+        
+        deployer = CloudDeployer(hf_token="valid_token")
+        launch_script = deployer._generate_launch_script(
+            persona_path="personas/lucius_fox",
+            original_launch_script="launch_lucius_fox.py"
+        )
+        
+        # Check key elements in launch script
+        assert "#!/usr/bin/env python3" in launch_script
+        assert "Genesis Integration" in launch_script
+        assert "genesis_sequence()" in launch_script
+        
+        # Check Phase 4: RSI/Avatar generation
+        assert "ensure_avatar_exists" in launch_script
+        assert "FORGING PHYSICAL FORM VIA FLUX" in launch_script
+        assert "/app/persona_data/avatar.png" in launch_script
+        
+        # Check Phase 5: Construct narrative loading
+        assert "construct.txt" in launch_script
+        assert "CONSTRUCT_NARRATIVE" in launch_script
+        assert "LOADING CONSTRUCT NARRATIVE" in launch_script
+        
+        # Check it runs agent zero
+        assert "from run_ui import run" in launch_script
+        assert "run()" in launch_script
     
     @patch('uatu_genesis_engine.deployment.cloud_deployer.HfApi')
     def test_deploy_persona_invalid_path(self, mock_hf_api):
