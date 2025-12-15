@@ -216,12 +216,17 @@ def run():
         async def handler_wrap() -> BaseResponse:
             return await instance.handle_request(request=request)
 
+        # Production security: Default-Deny Policy
+        is_production = os.getenv("SPACE_ID") is not None or os.getenv("ENVIRONMENT") == "production"
+        if is_production and not handler.requires_loopback():
+            handler_wrap = requires_api_key(handler_wrap)
+        elif handler.requires_api_key():
+            handler_wrap = requires_api_key(handler_wrap)
+        
         if handler.requires_loopback():
             handler_wrap = requires_loopback(handler_wrap)
         if handler.requires_auth():
             handler_wrap = requires_auth(handler_wrap)
-        if handler.requires_api_key():
-            handler_wrap = requires_api_key(handler_wrap)
         if handler.requires_csrf():
             handler_wrap = csrf_protect(handler_wrap)
 
