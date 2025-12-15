@@ -194,6 +194,13 @@ class AgentInstantiator:
         script_name = f"launch_{safe_name}.py"
         script_path = self.persona_dir / script_name
         
+        # Serialize soul anchor data for the launch script
+        import json
+        # Use json.dumps with ensure_ascii to prevent injection via unicode
+        soul_anchor_json = json.dumps(self.soul_anchor, indent=2, ensure_ascii=True)
+        # Escape any triple quotes to prevent breaking out of the string literal
+        soul_anchor_json = soul_anchor_json.replace("'''", r"\'\'\'")
+        
         # Use template with safe string formatting to avoid injection
         script_content = '''#!/usr/bin/env python3
 """
@@ -207,6 +214,7 @@ Language models can be hotswapped, but the person remains constant.
 """
 import sys
 import os
+import json
 from pathlib import Path
 
 # Add agent-zero to path
@@ -217,6 +225,48 @@ sys.path.insert(0, str(agent_zero_path))
 os.environ["AGENT_PROFILE"] = "{display_name}"
 os.environ["AGENT_PROMPTS_DIR"] = str(Path(__file__).parent / "prompts")
 os.environ["WORKSHOP_PERSONA_LOCKED"] = "true"  # Prevent persona switching
+
+# Genesis sequence: Generate RSI (Residual Self-Image) avatar if not exists
+def genesis_sequence():
+    """Generate avatar on first boot if it doesn't exist."""
+    persona_data_dir = Path(__file__).parent / "persona_data"
+    avatar_path = persona_data_dir / "avatar.png"
+    
+    if not avatar_path.exists():
+        print(">" * 80)
+        print("> GENESIS SEQUENCE: GENERATING RSI...")
+        print(">" * 80)
+        
+        try:
+            from python.helpers.rsi_generator import RSIGenerator
+            
+            # Load soul anchor data
+            soul_anchor_json_str = """{soul_anchor_json}"""
+            soul_anchor = json.loads(soul_anchor_json_str)
+            
+            # Generate physical description
+            print("> Step 1: Generating physical self-description...")
+            description = RSIGenerator.describe_self(soul_anchor)
+            print(f"> Description generated: {{len(description)}} characters")
+            
+            # Generate avatar image
+            print("> Step 2: Forging avatar via AI image generation...")
+            avatar_output = str(persona_data_dir / "avatar.png")
+            success = RSIGenerator.generate_avatar(description, avatar_output)
+            
+            if success:
+                print("> Genesis sequence complete. RSI manifested.")
+            else:
+                print("> Warning: Avatar generation failed but continuing launch...")
+                
+        except Exception as e:
+            print(f"> Warning: Genesis sequence error: {{e}}")
+            print("> Continuing launch without avatar...")
+        
+        print(">" * 80)
+
+# Run genesis sequence
+genesis_sequence()
 
 # Import and run agent zero
 try:
@@ -243,7 +293,7 @@ except Exception as e:
     import traceback
     traceback.print_exc()
     sys.exit(1)
-'''.format(display_name=safe_display_name, archetype=safe_archetype)
+'''.format(display_name=safe_display_name, archetype=safe_archetype, soul_anchor_json=soul_anchor_json)
         
         with open(script_path, 'w', encoding='utf-8') as f:
             f.write(script_content)
