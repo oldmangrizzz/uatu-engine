@@ -137,12 +137,9 @@ def ensure_avatar_exists(
         logger.info(f">> AVATAR ALREADY EXISTS: {avatar_path}")
         return True
     
-    # Generate self-description
-    # In a full implementation, this would query the agent's memory
-    description = describe_self()
-    
     # For first generation, use a default description
-    # This should be replaced with actual agent self-description in production
+    # In a full implementation, this would query the agent's memory
+    # using describe_self() and the agent's actual self-description
     default_description = (
         "A professional individual with intelligent eyes, "
         "subtle smile lines, and an aura of quiet confidence"
