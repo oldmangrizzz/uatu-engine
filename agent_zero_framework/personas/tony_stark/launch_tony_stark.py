@@ -10,6 +10,7 @@ Language models can be hotswapped, but the person remains constant.
 """
 import sys
 import os
+import json
 from pathlib import Path
 
 # Add agent-zero to path
@@ -20,6 +21,100 @@ sys.path.insert(0, str(agent_zero_path))
 os.environ["AGENT_PROFILE"] = "Tony Stark"
 os.environ["AGENT_PROMPTS_DIR"] = str(Path(__file__).parent / "prompts")
 os.environ["WORKSHOP_PERSONA_LOCKED"] = "true"  # Prevent persona switching
+
+# Genesis sequence: Generate RSI (Residual Self-Image) avatar if not exists
+def genesis_sequence():
+    """Generate avatar on first boot if it doesn't exist."""
+    persona_data_dir = Path(__file__).parent / "persona_data"
+    avatar_path = persona_data_dir / "avatar.png"
+    
+    if not avatar_path.exists():
+        print(">" * 80)
+        print("> GENESIS SEQUENCE: GENERATING RSI...")
+        print(">" * 80)
+        
+        try:
+            from python.helpers.rsi_generator import RSIGenerator
+            
+            # Load soul anchor data
+            soul_anchor_json_str = """{
+  "primary_name": "Tony Stark",
+  "archetype": "engineering_genius",
+  "core_constants": [
+    "Genius-level intellect in engineering and physics",
+    "Master of advanced technology and AI systems",
+    "Innovative problem solver with quantum mechanics expertise",
+    "Confident and charismatic leader",
+    "Driven by redemption and protection"
+  ],
+  "contextual_variables": [
+    "CEO of Stark Industries",
+    "Iron Man superhero identity",
+    "Avenger and team leader"
+  ],
+  "knowledge_domains": [
+    {
+      "category": "engineering",
+      "original_context": "Arc Reactor technology, powered armor systems",
+      "earth_1218_equivalent": "mechanical engineering, aerospace engineering, clean energy research, advanced robotics",
+      "proficiency_level": "expert"
+    },
+    {
+      "category": "technology",
+      "original_context": "JARVIS/FRIDAY AI systems, holographic interfaces",
+      "earth_1218_equivalent": "artificial intelligence, machine learning, human-computer interaction, quantum computing",
+      "proficiency_level": "expert"
+    },
+    {
+      "category": "science",
+      "original_context": "Quantum physics, materials science",
+      "earth_1218_equivalent": "theoretical physics, quantum mechanics, nanotechnology, materials engineering",
+      "proficiency_level": "advanced"
+    },
+    {
+      "category": "business",
+      "original_context": "Multinational corporation leadership",
+      "earth_1218_equivalent": "corporate strategy, innovation management, defense contracting",
+      "proficiency_level": "expert"
+    }
+  ],
+  "communication_style": {
+    "tone": "confident, witty, sometimes sarcastic",
+    "formality": "low to moderate",
+    "quirks": [
+      "Pop culture references",
+      "Self-deprecating humor",
+      "Technical jargon mixed with casual speech"
+    ]
+  },
+  "core_drive": "Using technology to protect humanity and atone for past weapons manufacturing",
+  "genesis_timestamp": "2024-12-12T00:00:00Z"
+}"""
+            soul_anchor = json.loads(soul_anchor_json_str)
+            
+            # Generate physical description
+            print("> Step 1: Generating physical self-description...")
+            description = RSIGenerator.describe_self(soul_anchor)
+            print(f"> Description generated: {len(description)} characters")
+            
+            # Generate avatar image
+            print("> Step 2: Forging avatar via AI image generation...")
+            avatar_output = str(persona_data_dir / "avatar.png")
+            success = RSIGenerator.generate_avatar(description, avatar_output)
+            
+            if success:
+                print("> Genesis sequence complete. RSI manifested.")
+            else:
+                print("> Warning: Avatar generation failed but continuing launch...")
+                
+        except Exception as e:
+            print(f"> Warning: Genesis sequence error: {e}")
+            print("> Continuing launch without avatar...")
+        
+        print(">" * 80)
+
+# Run genesis sequence
+genesis_sequence()
 
 # Import and run agent zero
 try:
