@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Example demonstrating the Lucius Fox Multiversal Swarm Framework.
+Example demonstrating the Uatu Genesis Engine Multiversal Swarm Framework.
 This script shows how to use the framework programmatically.
+
+Note: This uses generic subject examples for demonstration.
+The system is designed to work with ANY subject, real or fictional.
 """
 import asyncio
 import logging
@@ -18,26 +21,35 @@ logger = logging.getLogger(__name__)
 
 
 async def demo():
-    """Demonstrate the framework with example characters."""
+    """Demonstrate the framework with example subjects."""
     
-    # List of example characters to analyze
-    example_characters = [
-        "Tony Stark",
-        "Bruce Wayne", 
-        "Hermione Granger"
+    # List of example subjects to analyze (can be real or fictional)
+    # Replace with your own subjects of interest
+    example_subjects = [
+        "Example Subject A",  # Replace with actual subject
+        "Example Subject B",  # Replace with actual subject
+        "Example Subject C"   # Replace with actual subject
     ]
     
     output_dir = Path("./demo_output")
     output_dir.mkdir(exist_ok=True)
     
     print("=" * 80)
-    print("LUCIUS FOX MULTIVERSAL HISTORY SWARM FRAMEWORK - DEMO")
+    print("UATU GENESIS ENGINE - MULTIVERSAL HISTORY FRAMEWORK DEMO")
     print("=" * 80)
     print()
+    print("This demo shows how to generate soul anchors for any subject.")
+    print("Update the example_subjects list above with your subjects of interest.")
+    print()
     
-    for character_name in example_characters:
+    for subject_name in example_subjects:
+        if "Example Subject" in subject_name:
+            print(f"\n⚠️  Skipping '{subject_name}' (placeholder)")
+            print("    Update example_subjects in the script with real subjects")
+            continue
+            
         print(f"\n{'='*80}")
-        print(f"Processing: {character_name}")
+        print(f"Processing: {subject_name}")
         print(f"{'='*80}\n")
         
         # Initialize orchestrator
@@ -45,7 +57,7 @@ async def demo():
         
         try:
             # Gather data
-            profile = await orchestrator.gather_multiversal_history(character_name)
+            profile = await orchestrator.gather_multiversal_history(subject_name)
             
             # Display summary
             print(f"\n✅ Data gathered for {profile.primary_name}")
@@ -55,10 +67,10 @@ async def demo():
             print(f"   Data Sources: {len(profile.data_sources)}")
             
             # Export data
-            char_safe = character_name.replace(" ", "_").lower()
-            json_path = output_dir / f"{char_safe}_profile.json"
+            subject_safe = subject_name.replace(" ", "_").lower()
+            json_path = output_dir / f"{subject_safe}_profile.json"
             orchestrator.export_profile(str(json_path))
-            anchor_path = output_dir / f"{char_safe}_soul_anchor.yaml"
+            anchor_path = output_dir / f"{subject_safe}_soul_anchor.yaml"
             orchestrator.export_soul_anchor(str(anchor_path))
             
             # Generate graph
@@ -70,7 +82,7 @@ async def demo():
                 print(f"   📊 Graph: {graph_files['graph_image']}")
             
         except Exception as e:
-            logger.error(f"Error processing {character_name}: {e}", exc_info=True)
+            logger.error(f"Error processing {subject_name}: {e}", exc_info=True)
             continue
     
     print(f"\n{'='*80}")

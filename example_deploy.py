@@ -4,6 +4,11 @@ Example usage of CloudDeployer
 
 This script demonstrates how to deploy a persona to Hugging Face Spaces.
 Note: You need a valid Hugging Face token to actually deploy.
+
+Before running this:
+1. Generate a persona using: python main.py "Subject Name" --export
+2. Set your HF_TOKEN environment variable
+3. Update the persona_path below to match your generated persona
 """
 import os
 from pathlib import Path
@@ -12,7 +17,7 @@ from uatu_genesis_engine.deployment import CloudDeployer, AuthenticationError
 
 def main():
     """
-    Example: Deploy Lucius Fox persona to Hugging Face Spaces
+    Example: Deploy a generated persona to Hugging Face Spaces
     """
     # Get token from environment (never hardcode tokens!)
     hf_token = os.environ.get("HF_TOKEN")
@@ -30,12 +35,17 @@ def main():
         print(f"✅ Authenticated as: {deployer.user_info.get('name')}")
         
         # Deploy persona
-        persona_path = "agent_zero_framework/personas/lucius_fox"
+        # TODO: Replace with your generated persona path
+        # Example: "agent_zero_framework/personas/your_subject_name"
+        persona_path = "agent_zero_framework/personas/[your_persona_name]"
         
         # Check if persona exists
-        if not Path(persona_path).exists():
+        if not Path(persona_path).exists() or "[your_persona_name]" in persona_path:
             print(f"❌ Persona not found at: {persona_path}")
-            print("   Make sure you're running from the repository root")
+            print("   Steps to deploy:")
+            print("   1. Generate a persona: python main.py \"Subject Name\" --export")
+            print("   2. Update persona_path in this script")
+            print("   3. Run this script again")
             return
         
         print(f"\n🚀 Deploying persona from: {persona_path}")
