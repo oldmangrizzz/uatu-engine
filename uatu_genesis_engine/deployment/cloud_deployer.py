@@ -143,27 +143,49 @@ def secure_boot_sequence():
         print(">> DETECTED LOCAL VAULT (.env)")
         print(">> DECRYPTING CREDENTIALS...")
         
-        # Load env vars manually to ensure they inject into os.environ
-        count = 0
-        with open(vault_path, "r", encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-                # Skip empty lines and comments
-                if not line or line.startswith("#"):
-                    continue
-                if "=" in line:
-                    key, value = line.split("=", 1)
-                    # Strip whitespace and remove quotes if present
-                    key = key.strip()
-                    value = value.strip().strip('"').strip("'")
-                    # Validate key format (alphanumeric and underscores only)
-                    if key and key.replace('_', '').isalnum():
-                        os.environ[key] = value
-                        count += 1
-        
-        print(f">> {{count}} KEYS INJECTED SUCCESSFULLY.")
-        time.sleep(1)
-        return
+        # Use python-dotenv for robust parsing (handles quotes, escaping, etc.)
+        try:
+            from dotenv import dotenv_values
+            env_vars = dotenv_values(vault_path)
+            
+            # Validate and inject environment variables
+            count = 0
+            allowed_keys = {{
+                'OPENROUTER_API_KEY', 'HF_TOKEN', 'HUGGING_FACE_HUB_TOKEN',
+                'GITHUB_TOKEN', 'CONVEX_URL', 'CONVEX_ADMIN_KEY'
+            }}
+            
+            for key, value in env_vars.items():
+                # Only load whitelisted keys for security
+                if key in allowed_keys and value:
+                    os.environ[key] = value
+                    count += 1
+            
+            print(f">> {{count}} KEYS INJECTED SUCCESSFULLY.")
+            time.sleep(1)
+            return
+        except ImportError:
+            # Fallback to manual parsing if python-dotenv not available
+            count = 0
+            with open(vault_path, "r", encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    # Skip empty lines and comments
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        key, value = line.split("=", 1)
+                        # Strip whitespace and remove quotes if present
+                        key = key.strip()
+                        value = value.strip().strip('"').strip("'")
+                        # Validate key format (alphanumeric and underscores only)
+                        if key and key.replace('_', '').isalnum():
+                            os.environ[key] = value
+                            count += 1
+            
+            print(f">> {{count}} KEYS INJECTED SUCCESSFULLY.")
+            time.sleep(1)
+            return
 
     # 3. First Run - Manual Entry
     print("\\n[FIRST RUN DETECTED - SYSTEM CONFIGURATION REQUIRED]")
@@ -193,21 +215,46 @@ def secure_boot_sequence():
     # 4. Save to Vault
     save = input("\\n>> SAVE CREDENTIALS TO LOCAL VAULT (.env)? [Y/N]: ").strip().upper()
     if save == "Y":
-        with open(vault_path, "w", encoding='utf-8') as f:
-            # Write credentials with quotes to handle special characters
+        # Use python-dotenv for robust writing (handles escaping automatically)
+        try:
+            from dotenv import set_key
+            
+            # Write each credential safely with automatic escaping
             if or_key:
-                f.write(f'OPENROUTER_API_KEY="{{or_key}}"\\n')
+                set_key(vault_path, "OPENROUTER_API_KEY", or_key)
             if hf_key:
-                f.write(f'HF_TOKEN="{{hf_key}}"\\n')
-                f.write(f'HUGGING_FACE_HUB_TOKEN="{{hf_key}}"\\n')
+                set_key(vault_path, "HF_TOKEN", hf_key)
+                set_key(vault_path, "HUGGING_FACE_HUB_TOKEN", hf_key)
             if gh_key:
-                f.write(f'GITHUB_TOKEN="{{gh_key}}"\\n')
+                set_key(vault_path, "GITHUB_TOKEN", gh_key)
             if convex_url:
-                f.write(f'CONVEX_URL="{{convex_url}}"\\n')
+                set_key(vault_path, "CONVEX_URL", convex_url)
             if convex_key:
-                f.write(f'CONVEX_ADMIN_KEY="{{convex_key}}"\\n')
-        
-        print(">> VAULT CREATED.")
+                set_key(vault_path, "CONVEX_ADMIN_KEY", convex_key)
+                
+            print(">> VAULT CREATED.")
+        except ImportError:
+            # Fallback to manual writing with proper escaping
+            with open(vault_path, "w", encoding='utf-8') as f:
+                # Escape double quotes in values
+                if or_key:
+                    escaped_val = or_key.replace('"', '\\\\"')
+                    f.write(f'OPENROUTER_API_KEY="{{escaped_val}}"\\n')
+                if hf_key:
+                    escaped_val = hf_key.replace('"', '\\\\"')
+                    f.write(f'HF_TOKEN="{{escaped_val}}"\\n')
+                    f.write(f'HUGGING_FACE_HUB_TOKEN="{{escaped_val}}"\\n')
+                if gh_key:
+                    escaped_val = gh_key.replace('"', '\\\\"')
+                    f.write(f'GITHUB_TOKEN="{{escaped_val}}"\\n')
+                if convex_url:
+                    escaped_val = convex_url.replace('"', '\\\\"')
+                    f.write(f'CONVEX_URL="{{escaped_val}}"\\n')
+                if convex_key:
+                    escaped_val = convex_key.replace('"', '\\\\"')
+                    f.write(f'CONVEX_ADMIN_KEY="{{escaped_val}}"\\n')
+            
+            print(">> VAULT CREATED.")
 
         # 5. Secure the Vault (Update .gitignore)
         gitignore_path = repo_root / ".gitignore"
