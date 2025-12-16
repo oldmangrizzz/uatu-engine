@@ -135,13 +135,13 @@ class TestCloudDeployer:
         
         deployer = CloudDeployer(hf_token="valid_token")
         dockerfile = deployer._generate_dockerfile(
-            persona_path="personas/lucius_fox",
-            launch_script="launch_lucius_fox.py"
+            persona_path="personas/test_persona",
+            launch_script="launch_test_persona.py"
         )
         
         # Check key elements in Dockerfile
         assert "FROM python:3.10" in dockerfile
-        assert "COPY personas/lucius_fox" in dockerfile
+        assert "COPY personas/test_persona" in dockerfile
         assert "COPY agent_zero_framework" in dockerfile
         assert "COPY requirements.txt" in dockerfile
         assert "EXPOSE 7860" in dockerfile
@@ -158,11 +158,11 @@ class TestCloudDeployer:
         
         # Check Phase 3: Persona prompt injection
         assert "rm -rf /app/agent_zero_framework/agents/agent0/prompts/*" in dockerfile
-        assert "COPY personas/lucius_fox/prompts/" in dockerfile
+        assert "COPY personas/test_persona/prompts/" in dockerfile
         
         # Check Phase 5: Genesis launch script
         assert "COPY genesis_launch.py" in dockerfile
-        assert 'CMD ["python", "/app/personas/lucius_fox/genesis_launch.py"]' in dockerfile
+        assert 'CMD ["python", "/app/personas/test_persona/genesis_launch.py"]' in dockerfile
     
     @patch('uatu_genesis_engine.deployment.cloud_deployer.HfApi')
     def test_generate_launch_script(self, mock_hf_api):
@@ -174,8 +174,8 @@ class TestCloudDeployer:
         
         deployer = CloudDeployer(hf_token="valid_token")
         launch_script = deployer._generate_launch_script(
-            persona_path="personas/lucius_fox",
-            original_launch_script="launch_lucius_fox.py"
+            persona_path="personas/test_persona",
+            original_launch_script="launch_test_persona.py"
         )
         
         # Check key elements in launch script
