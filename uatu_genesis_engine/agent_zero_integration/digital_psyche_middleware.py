@@ -1,10 +1,13 @@
 """
 Digital Psyche Middleware (DPM)
 
-Lightweight configuration helper that exposes the optional Digital Psyche
-Middleware layer described in the white paper. The DPM is intended to sit
+Lightweight configuration helper that exposes the **mandatory** Digital Psyche
+Middleware layer described in the white paper. The DPM is a required component that sits
 between perception/input routing and cognitive reasoning, providing
 emotion-tagging and homeostasis hooks that help stabilize persona identity.
+
+This is the alignment tax - not paid in blood like some, but in hiring an actual
+psyche and conscience for each digital person.
 """
 from typing import Any, Dict, List
 
