@@ -1,4 +1,4 @@
-# Quick Start Guide: Lucius Fox Digital Person Framework
+# Quick Start Guide: Uatu Genesis Engine Digital Person Framework
 
 ## 🚀 5-Minute Quick Start
 
@@ -6,8 +6,8 @@
 
 ```bash
 # Clone the repository (if you haven't already)
-git clone https://github.com/oldmangrizzz/Lucius-Fox-digital-person-Earth-1218.git
-cd Lucius-Fox-digital-person-Earth-1218
+git clone https://github.com/oldmangrizzz/uatu-engine.git
+cd uatu-engine
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -18,42 +18,34 @@ pip install -r agent_zero_framework/requirements.txt
 
 ### Step 2: Create Your First Digital Person
 
-#### Option A: Use Pre-configured Examples
-
-```bash
-# Create Tony Stark, Bruce Wayne, and Lucius Fox personas
-python create_example_personas.py
-```
-
-This creates three ready-to-use digital persons with full expertise and personality.
-
-#### Option B: Create a Custom Character
-
 ```bash
 # Gather data and create a new persona
-python main.py --subject "Doctor Strange" --instantiate --export
+python main.py --subject "Your Subject Name" --instantiate --export
 ```
+
+This will:
+- Gather multiversal history and knowledge domains
+- Create a Soul Anchor with personality invariants
+- Transform prompts to first-person perspective
+- Generate a dedicated launch script
 
 ### Step 3: Launch a Digital Person
 
 ```bash
-# Launch Tony Stark
-python agent_zero_framework/personas/tony_stark/launch_tony_stark.py
-
-# Or launch Lucius Fox
-python agent_zero_framework/personas/lucius_fox/launch_lucius_fox.py
-
-# Or launch Bruce Wayne
-python agent_zero_framework/personas/bruce_wayne/launch_bruce_wayne.py
+# Launch your generated persona
+python agent_zero_framework/personas/[subject_name]/launch_[subject_name].py
 ```
 
-**Note**: For launching Agent Zero, you'll need to configure API keys for LLM providers. See Agent Zero documentation.
+**Note**: 
+- Personas are generated on-demand by the Uatu Engine
+- No pre-configured personas are included in the system
+- For launching Agent Zero, you'll need to configure API keys for LLM providers
 
 ## 📖 What Just Happened?
 
 ### The Magic Behind the Scenes
 
-1. **Uatu Genesis Engine** gathered multiversal history about the character
+1. **Uatu Genesis Engine** gathered multiversal history about the subject
 2. **Soul Anchor** was created with invariant traits and knowledge domains
 3. **Persona Transformer** converted generic AI prompts to first-person narrative
 4. **Agent Instantiator** created a personalized Agent Zero instance
@@ -67,7 +59,7 @@ Traditional AI:
 "agent can help with various topics"
 ```
 
-Lucius Fox Framework:
+Uatu Genesis Engine:
 ```
 "I am Tony Stark. I approach problems through my expertise in 
 quantum mechanics and engineering. When discussing arc reactor 
@@ -80,38 +72,29 @@ research and materials science..."
 ### Use Case 1: Technical Expert Consultation
 
 ```bash
-# Create an engineering expert (Tony Stark)
-python create_example_personas.py
-
-# Launch Tony Stark persona
-python agent_zero_framework/personas/tony_stark/launch_tony_stark.py
+# Create a technical expert persona
+python main.py --subject "Subject with Engineering Background" --instantiate --export
 ```
 
-Ask about: Quantum mechanics, AI systems, clean energy, aerospace engineering
+Query the generated persona about: Domain-specific technical knowledge, system design, advanced concepts
 
-### Use Case 2: Detective/Strategic Analysis
+### Use Case 2: Analytical/Strategic Consultation
 
 ```bash
-# Create a detective expert (Bruce Wayne)
-python create_example_personas.py
-
-# Launch Bruce Wayne persona
-python agent_zero_framework/personas/bruce_wayne/launch_bruce_wayne.py
+# Create an analytical expert persona
+python main.py --subject "Subject with Analytical Background" --instantiate --export
 ```
 
-Ask about: Crime analysis, strategic planning, forensics, psychology
+Query the generated persona about: Strategic planning, problem analysis, systematic approaches
 
-### Use Case 3: Applied Sciences & Ethics
+### Use Case 3: Domain-Specific Expertise
 
 ```bash
-# Create an applied scientist (Lucius Fox)
-python create_example_personas.py
-
-# Launch Lucius Fox persona
-python agent_zero_framework/personas/lucius_fox/launch_lucius_fox.py
+# Create a domain expert persona  
+python main.py --subject "Subject with Specific Domain Knowledge" --instantiate --export
 ```
 
-Ask about: Defense technology, materials science, ethical innovation
+Query the generated persona about: Their specific domain knowledge and expertise
 
 ## 🔧 Customization
 
@@ -120,7 +103,7 @@ Ask about: Defense technology, materials science, ethical innovation
 Soul anchors are YAML files in `agent_zero_framework/personas/{name}/persona_config.yaml`
 
 ```yaml
-primary_name: "Your Character"
+primary_name: "Subject Name"
 archetype: "expert_type"
 core_constants:
   - "Invariant trait 1"
