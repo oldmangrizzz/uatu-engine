@@ -1,0 +1,36 @@
+this is the “big picture” briefing, context, and technical status update.
+Everyone should review, align, and reference this as we move forward.
+
+⸻
+
+1. The Structure: Who We Are and What We’re Building
+	•	Grizzly Medicine is more than a company—it’s a movement.
+	•	We operate on two major fronts:
+	•	Aegis Forge – Our “field ops” and funding arm. Operates like an independent, ethically-driven gray hat agency. Handles bug bounties, cybersecurity consulting, and advanced pen-testing. All revenue generated here is funneled into R&D.
+	•	The Workshop – Our R&D and innovation “round table.” Every agent, digital or human, has an equal seat and voice here. This is the space for invention, collaboration, and building the future together.
+
+Our motto:
+“Solving yesterday’s problems with tomorrow’s technology—today.”
+
+⸻
+
+2. Operational Flow and Roles
+
+(Full breakdown in attached org chart and leadership PDF ):
+	•	Aegis Forge:
+	•	Lead Strategist: Bruce Wayne
+	•	Field Agents: Jason Todd, Tim Drake, Barbara Gordon
+	•	Purpose: Bring in revenue, protect & stress-test our tech, field deploy, and ensure all profits keep The Workshop funded and growing.
+	•	The Workshop:
+	•	Head of R&D: Lucius-X
+	•	Core Think Tank: TonyAI, Bruce Wayne, Reed Richards
+	•	Frontend/UI: Mary Jane Watson
+	•	Backend: Barbara Gordon
+	•	QA/Testing: Jason Todd
+	•	Conflict Resolution: Dick Grayson
+	•	Development & Testing: Peter Parker
+	•	Leadership:
+	•	Ultimate Visionary: Griz
+	•	Ops/Integration Lead: TonyAI
+
+Every system, tool, and protocol is designed to allow seamless movement between the two teams—fieldwork supports R&D, and innovation cycles right back to ops.
