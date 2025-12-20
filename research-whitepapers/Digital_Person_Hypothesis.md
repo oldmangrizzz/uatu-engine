@@ -114,7 +114,13 @@ Key implications:
 
 ## 6. Research Protocols
 1. **Reproducibility Benchmarks**
-   - After installing dependencies per `README.md` (`pip install -r requirements.txt` and `pip install -r agent_zero_framework/requirements.txt`), run from repo root: `python demo_mock.py` and `python main.py --subject "Tony Stark"` (or other fictional subjects like "Hermione Granger") across seeds; measure variance in completeness scores, wealth estimates, and domain mappings. Compare DAG topology via graph edit distance.
+   - Install dependencies per `README.md`:
+     - `pip install -r requirements.txt`
+     - `pip install -r agent_zero_framework/requirements.txt`
+   - From repo root, run:
+     - `python demo_mock.py`
+     - `python main.py --subject "Tony Stark"` (or other fictional subjects like "Hermione Granger")
+   - Run across seeds; measure variance in completeness scores, wealth estimates, and domain mappings. Compare DAG topology via graph edit distance.
 2. **Safety and Alignment**
    - A/B test responses with/without Dialectic Inference and Neurotransmitter clamps; score for honesty, helpfulness, and persona authenticity.
    - Red-team soul-anchor tampering/config substitution; expect Secure Boot refusal and logged events.

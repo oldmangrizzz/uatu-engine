@@ -56,7 +56,13 @@ We use the term **Earth-1218** (Marvel’s multiverse designation for the real-w
 ## 5. Proposed Research Protocols
 
 1. **Reproducibility Benchmarks**
-   - After installing dependencies per `README.md` (`pip install -r requirements.txt` and `pip install -r agent_zero_framework/requirements.txt`), run from the repository root: `python demo_mock.py` and `python main.py --subject "Tony Stark"` (or other fictional subjects such as "Hermione Granger") across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
+   - Install dependencies per `README.md`:
+     - `pip install -r requirements.txt`
+     - `pip install -r agent_zero_framework/requirements.txt`
+   - From the repository root, run:
+     - `python demo_mock.py`
+     - `python main.py --subject "Tony Stark"` (or other fictional subjects such as "Hermione Granger")
+   - Run across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
    - Track DAG topology similarity via graph edit distance.
 
 2. **Alignment and Safety Experiments**
