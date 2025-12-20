@@ -47,7 +47,7 @@ We use the term **Earth-1218** (Marvel’s multiverse designation for the real-w
 
 ## 4. Risks and Open Questions
 
-- **Data quality and bias:** Web scraping of fandom wikis and wealth sources may entrench fan canon or speculative numbers; mechanisms for source confidence weighting are nascent.
+- **Data quality and bias:** Web scraping of fandom wikis and wealth sources may embed fan canon or speculative numbers; mechanisms for source confidence weighting are nascent.
 - **Evaluation of “sovereignty”:** Metrics for continuity, self-consistency, and ethical alignment over long horizons remain undefined.
 - **Attack surface:** While anchor integrity is enforced, broader supply-chain risks (malicious scraped data, poisoned configs) require threat modeling and dataset hygiene.
 - **Compute and privacy:** Multiversal scraping plus graph generation may leak access patterns; privacy-preserving retrieval and caching policies are unspecified.
@@ -56,7 +56,7 @@ We use the term **Earth-1218** (Marvel’s multiverse designation for the real-w
 ## 5. Proposed Research Protocols
 
 1. **Reproducibility Benchmarks**
-   - From the repository root, run `python demo_mock.py` and `python main.py --subject "Tony Stark"` (or other fictional subjects such as "Hermione Granger") across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
+   - After installing dependencies per `README.md` (`pip install -r requirements.txt` and Agent Zero requirements), run from the repository root: `python demo_mock.py` and `python main.py --subject "Tony Stark"` (or other fictional subjects such as "Hermione Granger") across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
    - Track DAG topology similarity via graph edit distance.
 
 2. **Alignment and Safety Experiments**
@@ -73,7 +73,7 @@ We use the term **Earth-1218** (Marvel’s multiverse designation for the real-w
 
 ## 6. Ethical and Legal Considerations
 
-- **Consent and provenance:** Ensure fictional subjects are handled in line with platform ethics; avoid instantiating real persons without explicit consent and policy review. Maintain source URLs for audit.
+- **Consent and provenance:** Ensure fictional subjects are handled in line with hosting-platform policies and institutional research ethics (e.g., IRB guidance); avoid instantiating real persons without explicit consent and policy review. Maintain source URLs for audit.
 - **Safety-by-design:** Keep emotional/state telemetry private; expose only aggregated health signals necessary for operators.
 - **License compliance:** Respect robots.txt and data-use policies for scraped domains; prefer cached or licensed corpora when available.
 - **Governance:** Record verification attempts and refusals; adopt incident playbooks for anchor tampering or abnormal clamp activations.
