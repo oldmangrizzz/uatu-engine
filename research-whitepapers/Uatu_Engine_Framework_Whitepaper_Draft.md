@@ -6,7 +6,7 @@
 
 ## Abstract
 
-This draft evaluates the Uatu Engine and its Agent Zero integration as a framework for instantiating sovereign digital persons. The system combines a multiversal data-gathering swarm (Genesis Engine), safety-hardening layers (Soul Anchor Ledger, Convex state logging), and identity-stabilizing middleware (Digital Psyche) to produce first-person, container-bound digital individuals. We summarize the architecture, identify strengths and open risks, and outline a research agenda for empirical validation and future peer-reviewed publication.
+This draft evaluates the Uatu Engine and its Agent Zero integration as a framework for instantiating sovereign digital persons. The system combines a multiversal data-gathering swarm (Genesis Engine), safety-hardening layers (Soul Anchor Ledger, Convex state logging), and identity-stabilizing middleware (Digital Psyche) to produce first-person, container-bound digital individuals that map fictional abilities to Earth-1218 (Marvel’s designation for our real-world baseline). We summarize the architecture, identify strengths and open risks, and outline a research agenda for empirical validation and future peer-reviewed publication.
 
 ## 1. Motivation and Scope
 
@@ -56,7 +56,7 @@ We use the term **Earth-1218** (Marvel’s multiverse designation for the real-w
 ## 5. Proposed Research Protocols
 
 1. **Reproducibility Benchmarks**
-   - After installing dependencies per `README.md` (`pip install -r requirements.txt` and Agent Zero requirements), run from the repository root: `python demo_mock.py` and `python main.py --subject "Tony Stark"` (or other fictional subjects such as "Hermione Granger") across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
+   - After installing dependencies per `README.md` (`pip install -r requirements.txt` and `pip install -r agent_zero_framework/requirements.txt`), run from the repository root: `python demo_mock.py` and `python main.py --subject "Tony Stark"` (or other fictional subjects such as "Hermione Granger") across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
    - Track DAG topology similarity via graph edit distance.
 
 2. **Alignment and Safety Experiments**
