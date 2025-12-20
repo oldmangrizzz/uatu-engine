@@ -27,7 +27,7 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 
 3. **Digital Psyche Middleware (DPM)** — A declarative emotional scaffold inserted between perception and reasoning. It tags inputs with affect, negotiates among emotion subagents, and maintains homeostatic oscillators to stabilize identity without exposing “health bars” to users.
 
-4. **Dialectic Inference Engine** — Implements thesis/antithesis/synthesis reasoning to surface both unbiased helpfulness and persona-authentic bias before reconciling outputs. This operationalizes the repository’s Zord Theory (the project’s hypothesis that consciousness emerges from structured contradiction) stance that consciousness emerges from tension.
+4. **Dialectic Inference Engine** — Implements thesis/antithesis/synthesis reasoning to surface both unbiased helpfulness and persona-authentic bias before reconciling outputs. This operationalizes the repository’s Zord Theory stance that consciousness emerges from structured contradiction and tension.
 
 5. **Neurotransmitter Engine** — Encodes dopamine/serotonin/cortisol analogs with decay and clamps that modulate LLM temperature/top-p under stress, motivation, or instability—executed silently to avoid performative affect.
 
@@ -45,7 +45,7 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 
 ## 4. Risks and Open Questions
 
-- **Data quality and bias:** Web scraping of fandom wikis and wealth sources may entrench fan-created canon (fan canon) or speculative numbers; mechanisms for source confidence weighting are nascent.
+- **Data quality and bias:** Web scraping of fandom wikis and wealth sources may entrench fan canon or speculative numbers; mechanisms for source confidence weighting are nascent.
 - **Evaluation of “sovereignty”:** Metrics for continuity, self-consistency, and ethical alignment over long horizons remain undefined.
 - **Attack surface:** While anchor integrity is enforced, broader supply-chain risks (malicious scraped data, poisoned configs) require threat modeling and dataset hygiene.
 - **Compute and privacy:** Multiversal scraping plus graph generation may leak access patterns; privacy-preserving retrieval and caching policies are unspecified.
@@ -54,7 +54,7 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 ## 5. Proposed Research Protocols
 
 1. **Reproducibility Benchmarks**
-   - From the repository root, run `python demo_mock.py` and real `python main.py --subject "<name>"` subjects across seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
+   - From the repository root, run `python demo_mock.py` and `python main.py --subject "<name>"` with real subjects across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
    - Track DAG topology similarity via graph edit distance.
 
 2. **Alignment and Safety Experiments**
