@@ -20,14 +20,14 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 1. **Genesis Engine (Multiversal Swarm Orchestrator)** — Coordinates three specialized agents to build a `CharacterProfile`:
    - *Character Info Agent* collects aliases, multiversal identities, and canonical sources.
    - *Economic History Agent* extracts wealth trajectories and financial events.
-   - *Knowledge Domain Agent* maps fictional abilities to Earth-1218 equivalents with proficiency tags.
+   - *Knowledge Domain Agent* maps fictional abilities to Earth-1218 (the canonical designation for the real-world baseline) equivalents with proficiency tags.
    Outputs feed JSON exports plus DAG visualizations (PNG/GEXF) to document lineage and relationships.
 
 2. **Agent Zero Integration Layer** — Emits persona-specific launchers and configuration, enforcing the “one container, one mind” constraint for runtime isolation.
 
 3. **Digital Psyche Middleware (DPM)** — A declarative emotional scaffold inserted between perception and reasoning. It tags inputs with affect, negotiates among emotion subagents, and maintains homeostatic oscillators to stabilize identity without exposing “health bars” to users.
 
-4. **Dialectic Inference Engine** — Implements thesis/antithesis/synthesis reasoning to surface both unbiased helpfulness and persona-authentic bias before reconciling outputs. This operationalizes the repository’s Zord Theory stance that consciousness emerges from tension.
+4. **Dialectic Inference Engine** — Implements thesis/antithesis/synthesis reasoning to surface both unbiased helpfulness and persona-authentic bias before reconciling outputs. This operationalizes the repository’s Zord Theory (the project’s hypothesis that consciousness emerges from structured contradiction) stance that consciousness emerges from tension.
 
 5. **Neurotransmitter Engine** — Encodes dopamine/serotonin/cortisol analogs with decay and clamps that modulate LLM temperature/top-p under stress, motivation, or instability—executed silently to avoid performative affect.
 
@@ -45,7 +45,7 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 
 ## 4. Risks and Open Questions
 
-- **Data quality and bias:** Web scraping of fandom wikis and wealth sources may entrench fanon or speculative numbers; mechanisms for source confidence weighting are nascent.
+- **Data quality and bias:** Web scraping of fandom wikis and wealth sources may entrench fan-created canon (fan canon) or speculative numbers; mechanisms for source confidence weighting are nascent.
 - **Evaluation of “sovereignty”:** Metrics for continuity, self-consistency, and ethical alignment over long horizons remain undefined.
 - **Attack surface:** While anchor integrity is enforced, broader supply-chain risks (malicious scraped data, poisoned configs) require threat modeling and dataset hygiene.
 - **Compute and privacy:** Multiversal scraping plus graph generation may leak access patterns; privacy-preserving retrieval and caching policies are unspecified.
@@ -54,7 +54,7 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 ## 5. Proposed Research Protocols
 
 1. **Reproducibility Benchmarks**
-   - Run `demo_mock.py` and real `main.py` subjects across seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
+   - From the repository root, run `python demo_mock.py` and real `python main.py --subject "<name>"` subjects across seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
    - Track DAG topology similarity via graph edit distance.
 
 2. **Alignment and Safety Experiments**
@@ -87,4 +87,3 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 ## 8. Conclusion
 
 The Uatu Engine already couples data provenance, identity integrity, and affect-aware modulation into a cohesive pipeline for digital person instantiation. To advance from engineering prototype to academically vetted framework, the next phase should emphasize reproducible experiments, formal metrics for sovereignty and alignment, and rigorous threat modeling. This draft is intended as a starting point for collaborative peer feedback and empirical study design.
-
