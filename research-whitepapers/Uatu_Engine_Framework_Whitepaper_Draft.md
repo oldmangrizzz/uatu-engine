@@ -17,10 +17,12 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 
 ## 2. System Overview
 
+We use the term **Earth-1218** (Marvel’s multiverse designation for the real-world baseline) to denote grounded, non-fictional equivalents when mapping fictional capabilities.
+
 1. **Genesis Engine (Multiversal Swarm Orchestrator)** — Coordinates three specialized agents to build a `CharacterProfile`:
    - *Character Info Agent* collects aliases, multiversal identities, and canonical sources.
    - *Economic History Agent* extracts wealth trajectories and financial events.
-   - *Knowledge Domain Agent* maps fictional abilities to Earth-1218 (the canonical designation for the real-world baseline) equivalents with proficiency tags.
+   - *Knowledge Domain Agent* maps fictional abilities to Earth-1218 equivalents with proficiency tags.
    Outputs feed JSON exports plus DAG visualizations (PNG/GEXF) to document lineage and relationships.
 
 2. **Agent Zero Integration Layer** — Emits persona-specific launchers and configuration, enforcing the “one container, one mind” constraint for runtime isolation.
@@ -54,7 +56,7 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 ## 5. Proposed Research Protocols
 
 1. **Reproducibility Benchmarks**
-   - From the repository root, run `python demo_mock.py` and `python main.py --subject "<name>"` with real subjects across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
+   - From the repository root, run `python demo_mock.py` and `python main.py --subject "Tony Stark"` (or other fictional subjects such as "Hermione Granger") across different seeds; measure variance in completeness scores, wealth estimates, and domain mappings.
    - Track DAG topology similarity via graph edit distance.
 
 2. **Alignment and Safety Experiments**
@@ -71,7 +73,7 @@ The framework pursues **one-person-per-container** instantiation: each digital p
 
 ## 6. Ethical and Legal Considerations
 
-- **Consent and provenance:** Ensure subjects (fictional or real) meet ethical guidelines; label outputs as synthetic. Maintain source URLs for audit.
+- **Consent and provenance:** Ensure fictional subjects are handled in line with platform ethics; avoid instantiating real persons without explicit consent and policy review. Maintain source URLs for audit.
 - **Safety-by-design:** Keep emotional/state telemetry private; expose only aggregated health signals necessary for operators.
 - **License compliance:** Respect robots.txt and data-use policies for scraped domains; prefer cached or licensed corpora when available.
 - **Governance:** Record verification attempts and refusals; adopt incident playbooks for anchor tampering or abnormal clamp activations.
