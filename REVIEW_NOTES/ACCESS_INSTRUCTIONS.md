@@ -30,3 +30,15 @@ Basic steps to access locally (Linux/macOS):
 6. If you requested redaction/encryption, I will produce a password-protected ZIP and provide the passphrase via an agreed out-of-band channel.
 
 If you'd like, I can also prepare a short, non-technical README that explains what's in the package step by step for a first-time reviewer. Reply 'Yes' to have me create that README and optionally encrypt the package (I'll ask for your chosen passphrase or generate a secure one and show it to you interactively).
+
+Admin override & Emergence Gate quick guide
+- To sign an override payload, use scripts/sign_override.py. Example:
+  - Create payload.json with {"action":"override_edit", "fields":["primary_name"], "exp": 1700000000}
+  - Sign: python scripts/sign_override.py -k ./emergence_gate/private_key.pem -f payload.json
+- To apply an override using the Persona Customization API, include:
+  - override_payload: JSON string
+  - override_signature: the base64 signature
+- Audit logs:
+  - edit_rejection and edit_override events are recorded in emergence_gate/events.jsonl
+  - override verification attempts are logged to emergence_gate/override_verification.jsonl
+  - Convex local backups include security_event entries when Convex is enabled
