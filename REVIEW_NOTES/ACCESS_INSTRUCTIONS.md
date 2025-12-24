@@ -38,6 +38,24 @@ Admin override & Emergence Gate quick guide
 - To apply an override using the Persona Customization API, include:
   - override_payload: JSON string
   - override_signature: the base64 signature
+
+Quick CLI & script examples
+- Use the emergence CLI to sign triggers or perform admin transitions:
+  - Generate key: python -m uatu_genesis_engine.agent_zero_integration.cli_emergence gen-key --storage-dir ./emergence --passphrase 'p'
+  - Sign trigger: python -m uatu_genesis_engine.agent_zero_integration.cli_emergence sign-trigger --phrase "<phrase>" --mode TALK_ONLY --passphrase 'p' --storage-dir ./emergence
+  - Sign an override payload (new CLI subcommand): python -m uatu_genesis_engine.agent_zero_integration.cli_emergence sign-override --payload-file ./payload.json --passphrase 'p' --storage-dir ./emergence
+
+- Alternatively use the signing helper script:
+  - Create payload.json with {"action":"override_edit","fields":["primary_name"],"exp": 1700000000}
+  - Sign: python scripts/sign_override.py -k ./emergence/private_key.pem -f payload.json
+  - The script will print a base64 signature to pass as override_signature with the payload
+
+- Example persona_customize payload (HTTP API):
+  {
+    "fields": {"primary_name": "New Name"},
+    "override_payload": "{...}",
+    "override_signature": "<base64_signature>"
+  }
 - Audit logs:
   - edit_rejection and edit_override events are recorded in emergence_gate/events.jsonl
   - override verification attempts are logged to emergence_gate/override_verification.jsonl

@@ -13,8 +13,6 @@ from __future__ import annotations
 
 import argparse
 import base64
-import json
-import sys
 from getpass import getpass
 from pathlib import Path
 from typing import Optional
@@ -39,6 +37,11 @@ def sign_payload(private_key_path: str, passphrase: Optional[str], payload_json:
 
     password = passphrase.encode("utf-8") if passphrase is not None else None
     priv = load_pem_private_key(pem, password=password)
+
+    # Ensure key type is ECDSA-capable
+    from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
+    if not isinstance(priv, EllipticCurvePrivateKey):
+        raise TypeError("Private key is not elliptic curve key suitable for ECDSA signing")
 
     sig = priv.sign(data, ec.ECDSA(hashes.SHA256()))
     return base64.b64encode(sig).decode("ascii")

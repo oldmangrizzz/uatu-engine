@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 from typing import Optional
+from pathlib import Path
 
 from .emergence_gate import EmergenceGate, GateState
 
@@ -73,6 +74,12 @@ def main(argv=None):
     p5.add_argument("--state", required=True, choices=[s.value for s in GateState])
     p5.add_argument("--passphrase", required=True)
 
+    p6 = sub.add_parser("sign-override")
+    p6.add_argument("--storage-dir", required=False)
+    p6.add_argument("--payload-file", required=False)
+    p6.add_argument("--payload", required=False)
+    p6.add_argument("--passphrase", required=False)
+
     args = parser.parse_args(argv)
 
     if args.cmd == "gen-key":
@@ -85,6 +92,21 @@ def main(argv=None):
         apply_phrase(args.storage_dir, args.phrase)
     elif args.cmd == "admin-transition":
         admin_transition(args.storage_dir, args.state, args.passphrase.encode("utf-8"))
+    elif args.cmd == "sign-override":
+        # Use sign_override helper to sign payloads using the private key stored in the emergence gate
+        from scripts.sign_override import sign_payload
+        payload = None
+        if args.payload_file:
+            payload = Path(args.payload_file).read_text(encoding="utf-8")
+        elif args.payload:
+            payload = args.payload
+        else:
+            parser.error("sign-override requires --payload-file or --payload")
+
+        passphrase = args.passphrase.encode("utf-8") if args.passphrase else None
+        gate = EmergenceGate(storage_dir=args.storage_dir)
+        sig = sign_payload(str(gate.private_key_path), passphrase.decode("utf-8") if passphrase else None, payload)
+        print(sig)
     else:
         parser.print_help()
 
