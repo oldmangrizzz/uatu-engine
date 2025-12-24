@@ -1,9 +1,8 @@
 """
 Main swarm orchestrator for coordinating agents.
 """
-import asyncio
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 import os
 
@@ -78,7 +77,7 @@ class MultiversalSwarmOrchestrator:
         logger.info("Phase 4: Compiling character profile...")
         self.character_profile = self._compile_profile(character_name)
         
-        logger.info(f"=== Multiversal History Gathering Complete ===")
+        logger.info("=== Multiversal History Gathering Complete ===")
         logger.info(f"Completeness Score: {self.character_profile.completeness_score:.1f}%")
         
         return self.character_profile
@@ -254,13 +253,14 @@ class MultiversalSwarmOrchestrator:
             else "Balancing power, responsibility, and personal cost"
         )
 
+        # Build simple node and edge lists for knowledge graph export
         nodes = [str(domain.category) for domain in profile.knowledge_domains]
         edges = []
         for event in profile.economic_history:
-            for domain in profile.knowledge_domains[:1] if profile.knowledge_domains else []:
-                edges.append(
-                    {"cause": event.description, "effect": str(domain.category)}
-                )
+            effect = ""
+            if profile.knowledge_domains:
+                effect = str(profile.knowledge_domains[0].category)
+            edges.append({"cause": event.description, "effect": effect})
 
         soul_anchor = {
             "identity": {
@@ -284,15 +284,15 @@ class MultiversalSwarmOrchestrator:
         logger.info(f"Soul anchor exported to {output_path}")
         return output_path
     
-    def generate_graph(self, output_dir: str = "./output") -> Dict[str, str]:
+    def generate_graph(self, output_dir: str = "./output") -> Dict[str, Any]:
         """
         Generate visualizations of the gathered data.
-        
+
         Args:
             output_dir: Directory to save output files
-            
+
         Returns:
-            Dictionary with paths to generated files
+            Dictionary with paths to generated files and additional stats
         """
         if not self.character_profile:
             logger.error("No character profile available. Run gather_multiversal_history first.")

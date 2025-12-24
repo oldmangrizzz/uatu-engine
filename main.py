@@ -135,7 +135,7 @@ async def run_swarm(args):
         char_name_safe = character_name.replace(" ", "_").lower()
         
         logger.info("=" * 80)
-        logger.info(f"UATU GENESIS ENGINE + AGENT ZERO INTEGRATION")
+        logger.info("UATU GENESIS ENGINE + AGENT ZERO INTEGRATION")
         logger.info(f"Target Character: {character_name}")
         logger.info(f"Output Directory: {output_dir}")
         logger.info("=" * 80)
@@ -227,7 +227,7 @@ async def run_swarm(args):
         compiler = GraphMERTCompiler()
         graphmert_data = compiler.compile(profile)
         
-        print(f"\n✅ GraphMERT compiled:")
+        print("\n✅ GraphMERT compiled:")
         print(f"   Nodes: {graphmert_data.node_count}")
         print(f"   Facts: {graphmert_data.edge_count}")
         print(f"   Root Invariants: {len(graphmert_data.root_invariants)}")
@@ -247,7 +247,7 @@ async def run_swarm(args):
         if seed_result.get("mock_mode"):
             print(f"   [MOCK MODE] Saved backup to: {seed_result.get('backup_file')}")
         else:
-            print(f"✅ Seeded to Convex successfully")
+            print("✅ Seeded to Convex successfully")
         
         print("=" * 80)
         # ===== END GRAPHMERT COMPILATION =====

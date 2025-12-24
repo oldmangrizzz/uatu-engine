@@ -175,7 +175,7 @@ async def demo_with_mock_data():
     print("\n" + "=" * 80)
     print(f"📊 COMPREHENSIVE PROFILE: {profile.primary_name}")
     print("=" * 80)
-    print(f"\n🎭 ALIASES:")
+    print("\n🎭 ALIASES:")
     for alias in profile.aliases:
         print(f"  • {alias}")
     
@@ -209,12 +209,12 @@ async def demo_with_mock_data():
         print(f"     Universe: {event.source_universe}")
         print(f"     Description: {event.description}")
     
-    print(f"\n💎 WEALTH SUMMARY:")
+    print("\n💎 WEALTH SUMMARY:")
     print("-" * 80)
     print(f"  Total Estimated Wealth (Earth-1218 USD): ${profile.total_wealth_estimate:,.2f}")
     print(f"  Total Tracked Transactions: ${total_tracked:,.2f}")
     
-    print(f"\n📊 METADATA:")
+    print("\n📊 METADATA:")
     print("-" * 80)
     print(f"  Data Sources: {len(profile.data_sources)}")
     print(f"  Completeness Score: {profile.completeness_score:.1f}%")
@@ -241,7 +241,7 @@ async def demo_with_mock_data():
     if graph_files:
         print(f"✅ Graph visualization saved to: {graph_files['graph_image']}")
         print(f"✅ Graph data (GEXF) saved to: {graph_files['graph_data']}")
-        print(f"\n📊 Graph Statistics:")
+        print("\n📊 Graph Statistics:")
         for key, value in graph_files['stats'].items():
             print(f"     {key}: {value}")
     

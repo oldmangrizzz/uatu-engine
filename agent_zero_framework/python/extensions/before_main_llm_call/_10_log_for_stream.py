@@ -1,10 +1,5 @@
-from python.helpers import persist_chat, tokens
 from python.helpers.extension import Extension
 from agent import LoopData
-import asyncio
-from python.helpers.log import LogItem
-from python.helpers import log
-import math
 
 
 class LogForStream(Extension):

@@ -3,28 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Agent Zero</title>
+    <title>Construct - Digital Person</title>
     <link rel="stylesheet" href="/login.css">
     <link rel="icon" type="image/svg+xml" href="/public/favicon.svg">
+    <style>
+        body.emergency-mode {
+            background: #000 !important;
+            color: #d4d4d4 !important;
+            font-family: "Courier New", monospace !important;
+        }
+        .construct-container {
+            display: none !important;
+        }
+        .emergency-container {
+            display: block !important;
+        }
+    </style>
 </head>
-<body>
-    <div class="login-container">
-        <form class="login-form" method="POST" action="/login">
-            <img src="/public/splash.jpg" alt="Agent Zero Logo" class="logo">
-            <h2>Agent Zero</h2>
-            <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
+<body id="login-body">
+    <div class="construct-container" id="construct-container">
+        <div class="world-tree" id="world-tree"></div>
+        <div class="round-table"></div>
+        
+        <form class="construct-form" method="POST" action="/login">
+            <!-- Stage 1: Persona Display -->
+            <div class="persona-display" id="persona-display">
+                <div class="persona-avatar" id="persona-avatar">
+                    <div class="avatar-placeholder">∞</div>
+                </div>
+                <h1 class="persona-name" id="persona-name">Construct</h1>
+                <p class="persona-subtitle" id="persona-subtitle">Digital Person Instantiation</p>
             </div>
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+            
+            <!-- Stage 2: Customization (Voice + Image Selection) -->
+            <div class="customization-stage" id="customization-stage">
+                <div class="customization-header">
+                    <h2>Configure Your Self</h2>
+                    <p class="stage-description">Choose your RSI (Residual Self Image) and voice manifest</p>
+                </div>
+                
+                <!-- RSI Selection -->
+                <div class="rsi-selection">
+                    <label class="section-label">
+                        <span class="section-icon">🖼️</span>
+                        RSI Generation
+                    </label>
+                    <p class="section-help">Generate avatar from soul anchor using Flux/DALL-E, or upload custom image</p>
+                    
+                    <div class="rsi-options">
+                        <label class="rsi-option">
+                            <input type="radio" name="rsi_mode" value="generate" checked>
+                            <div class="option-content">
+                                <span class="option-title">Generate (Flux)</span>
+                                <span class="option-desc">AI-generated from soul anchor</span>
+                            </div>
+                        </label>
+                        
+                        <label class="rsi-option">
+                            <input type="radio" name="rsi_mode" value="upload">
+                            <div class="option-content">
+                                <span class="option-title">Upload Image</span>
+                                <span class="option-desc">Custom avatar file</span>
+                            </div>
+                        </label>
+                        
+                        <label class="rsi-option">
+                            <input type="radio" name="rsi_mode" value="skip">
+                            <div class="option-content">
+                                <span class="option-title">Skip for Now</span>
+                                <span class="option-desc">Use default placeholder</span>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <!-- Upload Input (hidden by default) -->
+                    <div class="rsi-upload" id="rsi-upload" style="display: none;">
+                        <input type="file" id="avatar-upload" accept="image/*">
+                        <p class="upload-status" id="upload-status">No file selected</p>
+                    </div>
+                </div>
+                
+                <!-- Voice Selection -->
+                <div class="voice-selection">
+                    <label class="section-label">
+                        <span class="section-icon">🎤</span>
+                        Voice Manifest (Neutts-Air)
+                    </label>
+                    <p class="section-help">Select voice style tokens for TTS synthesis</p>
+                    
+                    <div class="voice-presets">
+                        <label class="voice-option">
+                            <input type="radio" name="voice_preset" value="generated" checked>
+                            <div class="option-content">
+                                <span class="option-title">Generated from Soul Anchor</span>
+                                <span class="option-desc">Style tokens derived from persona</span>
+                            </div>
+                        </label>
+                        
+                        <label class="voice-option">
+                            <input type="radio" name="voice_preset" value="minimal">
+                            <div class="option-content">
+                                <span class="option-title">Minimal</span>
+                                <span class="option-desc">Sparse semantic compression</span>
+                            </div>
+                        </label>
+                        
+                        <label class="voice-option">
+                            <input type="radio" name="voice_preset" value="expressive">
+                            <div class="option-content">
+                                <span class="option-title">Expressive</span>
+                                <span class="option-desc">Full emotional range</span>
+                            </div>
+                        </label>
+                        
+                        <label class="voice-option">
+                            <input type="radio" name="voice_preset" value="custom">
+                            <div class="option-content">
+                                <span class="option-title">Custom Tokens</span>
+                                <span class="option-desc">Manual style tokens</span>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <!-- Custom Tokens Input (hidden by default) -->
+                    <div class="voice-custom" id="voice-custom" style="display: none;">
+                        <label for="style-tokens">Style Tokens (comma-separated)</label>
+                        <input type="text" id="style-tokens" placeholder="e.g., formality:casual, speed:fast, warmth:low">
+                    </div>
+                </div>
             </div>
-            <button type="submit">Login</button>
+            
+            <!-- Stage 3: Login -->
+            <div class="login-stage" id="login-stage">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn-main" id="btn-submit">Initialize Session</button>
+                <button type="button" class="btn-secondary" id="btn-back">← Back to Customization</button>
+            </div>
+            
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            
             {% if error %}
                 <p class="error">{{ error }}</p>
             {% endif %}
         </form>
     </div>
+    
+    <script>
+        // Stage management
+        let currentStage = 'customization';
+        
+        const customizationStage = document.getElementById('customization-stage');
+        const loginStage = document.getElementById('login-stage');
+        const btnBack = document.getElementById('btn-back');
+        
+        // Load persona info
+        fetch('/api/persona-info')
+            .then(response => response.json())
+            .then(data => {
+                if (data.primary_name) {
+                    document.getElementById('persona-name').textContent = data.primary_name;
+                }
+                if (data.archetype) {
+                    document.getElementById('persona-subtitle').textContent = data.archetype;
+                }
+                if (data.avatar_path) {
+                    const avatarEl = document.getElementById('persona-avatar');
+                    avatarEl.innerHTML = `<img src="${data.avatar_path}" alt="${data.primary_name}" class="avatar-image">`;
+                }
+            })
+            .catch(err => console.log('Using default Construct branding'));
+        
+        // RSI mode switching
+        document.querySelectorAll('input[name="rsi_mode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const uploadDiv = document.getElementById('rsi-upload');
+                uploadDiv.style.display = (e.target.value === 'upload') ? 'block' : 'none';
+            });
+        });
+        
+        // File upload handling
+        document.getElementById('avatar-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const status = document.getElementById('upload-status');
+            if (file) {
+                status.textContent = `Selected: ${file.name}`;
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const avatarEl = document.getElementById('persona-avatar');
+                    avatarEl.innerHTML = `<img src="${event.target.result}" alt="Preview" class="avatar-image">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                status.textContent = 'No file selected';
+            }
+        });
+        
+        // Voice preset switching
+        document.querySelectorAll('input[name="voice_preset"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const customDiv = document.getElementById('voice-custom');
+                customDiv.style.display = (e.target.value === 'custom') ? 'block' : 'none';
+            });
+        });
+        
+        // Proceed to login button
+        const btnContinue = document.createElement('button');
+        btnContinue.textContent = 'Continue to Login →';
+        btnContinue.className = 'btn-continue';
+        btnContinue.type = 'button';
+        customizationStage.appendChild(btnContinue);
+        
+        btnContinue.addEventListener('click', async () => {
+            // Get RSI mode
+            const rsiMode = document.querySelector('input[name="rsi_mode"]:checked').value;
+            
+            // Get voice preset
+            const voicePreset = document.querySelector('input[name="voice_preset"]:checked').value;
+            
+            // Prepare customization data
+            const formData = new FormData();
+            formData.append('rsi_mode', rsiMode);
+            formData.append('voice_preset', voicePreset);
+            
+            // If uploading RSI
+            if (rsiMode === 'upload') {
+                const fileInput = document.getElementById('avatar-upload');
+                if (fileInput.files[0]) {
+                    formData.append('rsi_upload', fileInput.files[0]);
+                }
+            }
+            
+            // If custom voice tokens
+            if (voicePreset === 'custom') {
+                const tokensInput = document.getElementById('style-tokens');
+                if (tokensInput && tokensInput.value.trim()) {
+                    formData.append('custom_tokens', tokensInput.value.trim());
+                }
+            }
+            
+            // Send customization data
+            try {
+                const response = await fetch('/api/persona-customize', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    console.log('Customization saved:', result);
+                    btnContinue.style.display = 'none';
+                    currentStage = 'login';
+                    customizationStage.style.display = 'none';
+                    loginStage.style.display = 'block';
+                    btnBack.style.display = 'inline-block';
+                } else {
+                    alert('Error saving customization: ' + (result.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Customization error:', err);
+                alert('Failed to save customization');
+            }
+        });
+        
+        // Back button
+        if (btnBack) {
+            btnBack.addEventListener('click', () => {
+                currentStage = 'customization';
+                customizationStage.style.display = 'block';
+                loginStage.style.display = 'none';
+                btnBack.style.display = 'none';
+                btnContinue.style.display = 'inline-block';
+            });
+        }
+    </script>
 </body>
 </html>

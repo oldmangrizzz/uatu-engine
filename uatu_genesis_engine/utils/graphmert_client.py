@@ -19,7 +19,7 @@ Example:
 import logging
 import re
 import time
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -164,7 +164,6 @@ class GraphMERTClient:
         Returns:
             GraphMERTResponse with extracted triples and metadata
         """
-        import time
         start_time = time.time()
         
         self.total_requests += 1

@@ -8,12 +8,11 @@ This module performs actual cloud deployments, not simulations.
 Converting local AI persona generators into cloud-deployment engines.
 This code executes real uploads to Hugging Face Spaces.
 """
-import os
 import tempfile
 from pathlib import Path
 from typing import Optional
 from huggingface_hub import HfApi
-from huggingface_hub.utils import HfHubHTTPError
+from huggingface_hub.errors import HfHubHTTPError
 
 
 class AuthenticationError(Exception):
@@ -66,7 +65,8 @@ class CloudDeployer:
         except HfHubHTTPError as e:
             # Space doesn't exist (404), create it
             if e.response.status_code == 404:
-                space_info = self.api.create_repo(
+                # Create the space; don't reuse the `space_info` variable to avoid type confusion
+                self.api.create_repo(
                     repo_id=space_name,
                     repo_type="space",
                     space_sdk="docker",

@@ -8,7 +8,6 @@ import re
 import yaml
 import logging
 from typing import Dict, Any, Optional
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

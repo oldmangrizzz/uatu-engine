@@ -5,7 +5,7 @@ Transforms agent prompts from 3rd person ("agent will") to 1st person narrative
 based on the individual's soul anchor and persona characteristics.
 """
 import re
-from typing import Dict, Any, List
+from typing import Dict, Any
 import logging
 
 logger = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ class PersonaTransformer:
         
         # Add core drive
         if self.core_drive:
-            header_parts.append(f"\n## Core Motivation:")
+            header_parts.append("\n## Core Motivation:")
             header_parts.append(f"{self.core_drive}")
         
         # Add communication style

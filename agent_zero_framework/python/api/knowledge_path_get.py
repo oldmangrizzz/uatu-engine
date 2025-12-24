@@ -1,7 +1,5 @@
 from python.helpers.api import ApiHandler, Request, Response
-from python.helpers import files, memory, notification, projects, notification
-import os
-from werkzeug.utils import secure_filename
+from python.helpers import files, memory, projects
 
 
 class GetKnowledgePath(ApiHandler):

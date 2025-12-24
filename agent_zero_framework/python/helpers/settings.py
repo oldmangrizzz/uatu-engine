@@ -2,7 +2,6 @@ import base64
 import hashlib
 import json
 import os
-import re
 import subprocess
 from typing import Any, Literal, TypedDict, cast
 
@@ -12,7 +11,6 @@ from . import files, dotenv
 from python.helpers.print_style import PrintStyle
 from python.helpers.providers import get_providers
 from python.helpers.secrets import get_default_secrets_manager
-from python.helpers import dirty_json
 
 
 class Settings(TypedDict):

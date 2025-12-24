@@ -21,42 +21,47 @@ class SoulAnchorLoader:
     def load_from_file(self, file_path: str) -> Dict[str, Any]:
         """
         Load soul anchor data from a YAML file.
-        
+
         Args:
             file_path: Path to the soul anchor YAML file
-            
+
         Returns:
             Dictionary containing soul anchor data
         """
         file_path_obj = Path(file_path)
-        
+
         if not file_path_obj.exists():
             raise FileNotFoundError(f"Soul anchor file not found: {file_path}")
-        
+
         logger.info(f"Loading soul anchor from: {file_path}")
-        
+
         with open(file_path_obj, 'r', encoding='utf-8') as f:
-            self.anchor_data = yaml.safe_load(f)
-        
+            raw = yaml.safe_load(f)
+            if raw is None:
+                raw = {}
+            if not isinstance(raw, dict):
+                raise ValueError("Soul anchor file did not contain a YAML mapping/dictionary")
+            self.anchor_data = raw
+
         self.source_file = file_path_obj
-        
+
         # Validate required fields
         self._validate_anchor_data()
-        
+
         logger.info(f"Successfully loaded soul anchor for: {self.get_primary_name()}")
         return self.anchor_data
     
     def load_from_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Load soul anchor data from a dictionary.
-        
+
         Args:
             data: Dictionary containing soul anchor data
-            
+
         Returns:
             The loaded anchor data
         """
-        self.anchor_data = data
+        self.anchor_data = data or {}
         self._validate_anchor_data()
         return self.anchor_data
     

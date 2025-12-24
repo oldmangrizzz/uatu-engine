@@ -1,6 +1,5 @@
 
 import os
-import sys
 from pathlib import Path
 import subprocess
 from python.helpers import files

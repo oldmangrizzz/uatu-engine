@@ -1,4 +1,9 @@
-import os, webcolors, html
+import os
+try:
+    import webcolors
+except Exception:
+    webcolors = None
+import html
 import sys
 from datetime import datetime
 from . import files

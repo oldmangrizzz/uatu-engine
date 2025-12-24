@@ -1,6 +1,5 @@
 from python.helpers.api import ApiHandler, Request, Response
 from python.helpers import dotenv, runtime
-from python.helpers.tunnel_manager import TunnelManager
 import requests
 
 
@@ -22,7 +21,7 @@ async def process(input: dict) -> dict | Response:
         response = requests.post(f"http://localhost:{tunnel_api_port}/", json={"action": "health"})
         if response.status_code == 200:
             service_ok = True
-    except Exception as e:
+    except Exception:
         service_ok = False
 
     # forward this request to the tunnel service if OK

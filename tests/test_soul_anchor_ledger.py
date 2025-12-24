@@ -5,7 +5,6 @@ Tests the cryptographic integrity checking system for soul anchors,
 including signature generation, verification, and hard-lock mechanisms.
 """
 import pytest
-import tempfile
 import yaml
 from pathlib import Path
 from uatu_genesis_engine.agent_zero_integration.soul_anchor_ledger import (

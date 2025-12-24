@@ -15,17 +15,19 @@ This data is NEVER displayed to the user in real-time - it's for post-hoc analys
 import asyncio
 import json
 import logging
-import os
 from datetime import datetime
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
+from types import ModuleType
+aiohttp: Optional[ModuleType] = None
 try:
-    import aiohttp
+    import aiohttp as _aiohttp  # type: ignore
+    aiohttp = _aiohttp
 except ImportError:
-    aiohttp = None
+    aiohttp = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -326,6 +328,12 @@ class ConvexStateLogger:
         
         This is called automatically but can also be called manually.
         """
+        # allow any pending scheduled logging tasks to run and append to buffer
+        try:
+            await asyncio.sleep(0.02)
+        except Exception:
+            pass
+
         if not self.log_buffer:
             return
         

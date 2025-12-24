@@ -62,5 +62,17 @@ agent_zero_framework/tmp/
 agent_zero_framework/usr/
 agent_zero_framework/personas/*/memory/
 agent_zero_framework/personas/*/logs/
+# Private provisional packages and archives
+REVIEW_NOTES/PRIVATE_*
+REVIEW_NOTES/PRIVATE_FULL_*
+REVIEW_NOTES/PROVISIONAL_PACKAGE_*
+REVIEW_NOTES/PRIVATE_PROVISIONAL_*
+REVIEW_NOTES/PUBLIC_PACKAGE_*
+REVIEW_NOTES/PRIVATE_FULL_PROVISIONAL_20251224.zip
+REVIEW_NOTES/PRIVATE_FULL_PROVISIONAL_ENCRYPTED_20251224.bin
+REVIEW_NOTES/PRIVATE_FULL_METADATA_20251224.json
+REVIEW_NOTES/PROVISIONAL_PACKAGE_root_20251224.zip
+REVIEW_NOTES/PUBLIC_PACKAGE_root_20251224.zip
+
 agent_zero_framework/webui/node_modules/
 

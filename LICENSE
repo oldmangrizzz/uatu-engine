@@ -1,4 +1,24 @@
-                    GNU AFFERO GENERAL PUBLIC LICENSE
+GrizzlyMedicine Ethical Addendum and Patent Reservation
+
+This project is licensed under the GNU Affero General Public License version 3 (AGPLv3).
+By exercising any rights under the AGPLv3 for this Work, you also agree to the following additional provisions (the "Ethical Use Addendum") and Patent Reservation; in the event of a conflict between the AGPLv3 and these provisions, these provisions control.
+
+Ethical Use Addendum (summary):
+1) Prohibited Uses: The Software (including derivatives) MAY NOT be used, deployed, or distributed, in whole or in part, for the following purposes:
+   a) Military, defense, or offensive lethal autonomous weapon systems;
+   b) Law enforcement surveillance, automated targeting, or decisioning that impacts individuals without documented, informed consent and due process;
+   c) Activities intended to harass, exploit, discriminate, or cause physical or psychological harm to individuals or groups.
+
+2) No Person Ownership: The Software shall not be used to create systems, legal claims, or data treatments that assert ownership or property rights over a human being. No license under this file permits treating a person as property.
+
+3) Patent Reservation: The Digital Psyche Middleware (DPM) embodied in this repository is patent-pending. Licensor (GrizzlyMedicine) reserves all patent rights relating to the DPM. This license does not grant any patent rights to DPM; use, distribution, or commercial exploitation of the DPM may require a separate patent license from Licensor.
+
+4) Enforcement: Licensor may terminate or refuse to grant licenses, and pursue remedies, upon discovery of prohibited uses. Termination will be communicated in writing.
+
+5) Contact for Patent Licensing and Exceptions: contact@grizzlymedicine.org
+
+Full AGPLv3 text follows below:
+                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>

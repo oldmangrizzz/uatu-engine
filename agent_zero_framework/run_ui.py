@@ -1,8 +1,6 @@
-import asyncio
 from datetime import timedelta
 import os
 import secrets
-import hashlib
 import time
 import socket
 import struct
@@ -18,6 +16,14 @@ from python.helpers.extract_tools import load_classes_from_folder
 from python.helpers.api import ApiHandler
 from python.helpers.print_style import PrintStyle
 from python.helpers import login
+
+# UATU MODE CHECK - Emergency detection
+UATU_MODE = os.environ.get('UATU_MODE', 'normal')
+if UATU_MODE == 'emergency':
+    PrintStyle.header("EMERGENCY MODE DETECTED")
+    PrintStyle.warning("Hardware fallback aesthetic will be loaded")
+    PrintStyle.warning("Persona lock is DISABLED")
+    print()
 
 # disable logging
 import logging
@@ -128,7 +134,7 @@ def requires_auth(f):
 
         if session.get('authentication') != user_pass_hash:
             return redirect(url_for('login_handler'))
-        
+
         return await f(*args, **kwargs)
 
     return decorated
@@ -152,13 +158,13 @@ async def login_handler():
     if request.method == 'POST':
         user = dotenv.get_dotenv_value("AUTH_LOGIN")
         password = dotenv.get_dotenv_value("AUTH_PASSWORD")
-        
+
         if request.form['username'] == user and request.form['password'] == password:
             session['authentication'] = login.get_credentials_hash()
             return redirect(url_for('serve_index'))
         else:
             error = 'Invalid Credentials. Please try again.'
-            
+
     login_page_content = files.read_file("webui/login.html")
     return render_template_string(login_page_content, error=error)
 
@@ -222,7 +228,7 @@ def run():
             handler_wrap = requires_api_key(handler_wrap)
         elif handler.requires_api_key():
             handler_wrap = requires_api_key(handler_wrap)
-        
+
         if handler.requires_loopback():
             handler_wrap = requires_loopback(handler_wrap)
         if handler.requires_auth():
@@ -282,7 +288,9 @@ def init_a0():
     # preload
     initialize.initialize_preload()
 
-
+# --- FOX'S PATCH: ALIAS MAIN TO RUN ---
+main = run
+# --------------------------------------
 
 # run the internal server
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import os
 import io
 import base64
 from PIL import Image
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 from werkzeug.utils import secure_filename
 
 from python.helpers.print_style import PrintStyle

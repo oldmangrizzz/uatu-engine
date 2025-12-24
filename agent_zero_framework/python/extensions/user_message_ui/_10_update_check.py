@@ -41,7 +41,7 @@ class UpdateCheck(Extension):
                     last_notification_id = notif.get("id")
                     last_notification_time = datetime.datetime.now()
                     self.send_notification(notif)
-        except Exception as e:
+        except Exception:
             pass # no need to log if the update server is inaccessible
 
 

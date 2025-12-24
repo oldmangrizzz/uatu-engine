@@ -2,7 +2,7 @@
 Agent for gathering character information from various wikis and databases.
 """
 import logging
-from typing import Dict, Any, List, Pattern
+from typing import Dict, Any, List, Pattern, cast
 import asyncio
 import re
 from urllib.parse import quote_plus
@@ -43,17 +43,13 @@ class CharacterInfoAgent(BaseAgent):
         """Gather basic character information."""
         logger.info(f"Character Info Agent gathering data for: {character_name}")
         
-        results = {
-            "character_name": character_name,
-            "aliases": [],
-            "multiversal_identities": [],
-            "occupations": [],
-            "first_appearances": [],
-            "sources": [],
-            "community_insights": [],
-            "constants": [],
-            "variables": []
-        }
+        # Local typed accumulators to satisfy static typing
+        aliases: List[str] = []
+        multiversal_identities: List[Dict[str, Any]] = []
+        occupations_list: List[str] = list(context.get("occupations", []))
+        first_appearances: List[str] = []
+        sources_list: List[str] = []
+        community_insights: List[str] = []
         trait_sets: List[set] = []
         
         # Search across multiple wiki sources
@@ -81,40 +77,64 @@ class CharacterInfoAgent(BaseAgent):
         
         # Aggregate results
         for result in search_results:
-            if isinstance(result, dict) and result.get("found"):
-                traits_for_source = set()
-                if result.get("aliases"):
-                    results["aliases"].extend(result["aliases"])
-                    traits_for_source.update(result["aliases"])
-                if result.get("occupation"):
-                    results["occupations"].append(result["occupation"])
-                    traits_for_source.add(result["occupation"])
-                if result.get("first_appearance"):
-                    results["first_appearances"].append(result["first_appearance"])
-                    traits_for_source.add(result["first_appearance"])
-                if result.get("universe"):
-                    results["multiversal_identities"].append({
-                        "universe": result["universe"],
-                        "name": result.get("name", character_name),
-                        "source": result.get("source")
-                    })
-                    traits_for_source.add(result["universe"])
-                results["sources"].append(result.get("source"))
-                if traits_for_source:
-                    trait_sets.append(traits_for_source)
-
+            if isinstance(result, dict):
+                r = cast(Dict[str, Any], result)
+                if r.get("found"):
+                    traits_for_source = set()
+                    aliases_val = r.get("aliases")
+                    if aliases_val:
+                        aliases.extend(cast(List[str], aliases_val))
+                        traits_for_source.update(cast(List[str], aliases_val))
+                    occupation_val = r.get("occupation")
+                    if occupation_val:
+                        occupations_list.append(cast(str, occupation_val))
+                        traits_for_source.add(cast(str, occupation_val))
+                    first_app = r.get("first_appearance")
+                    if first_app:
+                        first_appearances.append(cast(str, first_app))
+                        traits_for_source.add(cast(str, first_app))
+                    if r.get("universe"):
+                        source_val = r.get("source")
+                        multiversal_identities.append({
+                            "universe": r.get("universe"),
+                            "name": r.get("name", character_name),
+                            "source": source_val
+                        })
+                        traits_for_source.add(cast(str, r.get("universe")))
+                    source_val = r.get("source")
+                    if source_val:
+                        sources_list.append(cast(str, source_val))
+                    if traits_for_source:
+                        trait_sets.append(traits_for_source)
         # Aggregate community/headcanon sources
         for result in community_results:
-            if isinstance(result, dict) and result.get("found"):
-                if result.get("insights"):
-                    results["community_insights"].extend(result["insights"])
-                results["sources"].append(result.get("source"))
+            if isinstance(result, dict):
+                r = cast(Dict[str, Any], result)
+                if r.get("found"):
+                    insights_val = r.get("insights")
+                    if insights_val:
+                        community_insights.extend(cast(List[str], insights_val))
+                    source_val = r.get("source")
+                    if source_val:
+                        sources_list.append(cast(str, source_val))
         
         # Deduplicate
-        results["aliases"] = list(set(results["aliases"]))
-        results["occupations"] = list(set(results["occupations"]))
-        results["sources"] = list(set(results["sources"]))
-        results["constants"], results["variables"] = self._classify_traits(trait_sets)
+        aliases = list(set(aliases))
+        occupations_list = list(set(occupations_list))
+        sources_list = list(set(sources_list))
+        constants, variables = self._classify_traits(trait_sets)
+        
+        results = {
+            "character_name": character_name,
+            "aliases": aliases,
+            "multiversal_identities": multiversal_identities,
+            "occupations": occupations_list,
+            "first_appearances": first_appearances,
+            "sources": sources_list,
+            "community_insights": community_insights,
+            "constants": constants,
+            "variables": variables
+        }
         
         logger.info(f"Found {len(results['sources'])} sources for {character_name}")
         return results
@@ -126,15 +146,10 @@ class CharacterInfoAgent(BaseAgent):
             return {"found": False, "source": url}
         
         soup = self.parse_html(html)
-        result = {
-            "found": True,
-            "source": url,
-            "name": "",
-            "aliases": [],
-            "occupation": "",
-            "first_appearance": "",
-            "universe": self._extract_universe(source_base, soup)
-        }
+        aliases_local: List[str] = []
+        occupation_local: str = ""
+        first_appearance_local: str = ""
+        name_local: str = ""
         
         # Extract information based on common wiki patterns
         # This is a simplified extraction - real implementation would be more sophisticated
@@ -148,18 +163,27 @@ class CharacterInfoAgent(BaseAgent):
                 data = row.find("td")
                 if header and data:
                     header_text = header.get_text().strip().lower()
-                    data_text = data.get_text().strip()
+                    # Cast data.get_text() to str to satisfy type checkers
+                    data_text = str(data.get_text()).strip()
                     
                     if "alias" in header_text or "also known" in header_text:
                         # Extract aliases
                         aliases = [a.strip() for a in data_text.split(",") if a.strip()]
-                        result["aliases"].extend(aliases)
+                        aliases_local.extend(aliases)
                     elif "occupation" in header_text or "job" in header_text:
-                        result["occupation"] = data_text
+                        occupation_local = data_text
                     elif "first appearance" in header_text:
-                        result["first_appearance"] = data_text
+                        first_appearance_local = data_text
         
-        return result
+        return {
+            "found": True,
+            "source": url,
+            "name": name_local,
+            "aliases": aliases_local,
+            "occupation": occupation_local,
+            "first_appearance": first_appearance_local,
+            "universe": self._extract_universe(source_base, soup)
+        }
 
     async def _search_community_source(self, url: str, label: str, name_pattern: Pattern[str]) -> Dict[str, Any]:
         """Search community-driven sources (Reddit, social mirrors, forums) for headcanon and hypotheses."""
@@ -174,14 +198,15 @@ class CharacterInfoAgent(BaseAgent):
         candidate_nodes = soup.find_all(
             ["p", "li", "div", "span"],
             limit=self.max_insights * self.max_candidate_multiplier
-        )
+        )  # BeautifulSoup returns a list[Tag] which supports get_text()
 
         for snippet in candidate_nodes:
             if len(insights) >= self.max_insights:
                 break
             if snippet.name in {"div", "span"}:
-                classes = snippet.get("class", [])
-                if classes and not any("content" in cls or "comment" in cls for cls in classes):
+                from typing import cast, List
+                classes: List[str] = cast(List[str], snippet.get("class") or [])
+                if classes and not any("content" in str(cls) or "comment" in str(cls) for cls in classes):
                     continue
             text = snippet.get_text(" ", strip=True)
             if not text or len(text) < self.min_snippet_length:
@@ -202,7 +227,7 @@ class CharacterInfoAgent(BaseAgent):
             # Look for Marvel universe designation
             earth_tag = soup.find(text=re.compile(r"Earth-\d+"))
             if earth_tag:
-                match = re.search(r"Earth-\d+", earth_tag)
+                match = re.search(r"Earth-\d+", str(earth_tag))
                 if match:
                     return match.group(0)
             return "Marvel Comics (Universe Unknown)"
@@ -217,7 +242,7 @@ class CharacterInfoAgent(BaseAgent):
         else:
             return "Unknown Universe"
 
-    def _classify_traits(self, trait_sets: List[set]) -> (List[str], List[str]):
+    def _classify_traits(self, trait_sets: List[set]) -> tuple[List[str], List[str]]:
         """Classify traits as constants or variables based on frequency."""
         if not trait_sets:
             return [], []

@@ -10,7 +10,6 @@ from uatu_genesis_engine.agent_zero_integration.neurotransmitter_engine import (
     NeurotransmitterEngine,
     NeurotransmitterState,
     Stimulus,
-    EmotionalFlags,
     CommonStimuli
 )
 

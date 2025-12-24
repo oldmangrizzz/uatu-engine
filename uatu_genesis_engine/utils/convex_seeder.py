@@ -9,12 +9,15 @@ import json
 from typing import Dict, Any, Optional
 from datetime import datetime
 
+from types import ModuleType
+aiohttp: Optional[ModuleType] = None
 try:
-    import aiohttp
+    import aiohttp as _aiohttp  # type: ignore
+    aiohttp = _aiohttp
 except ImportError:
-    aiohttp = None
+    aiohttp = None  # type: ignore
 
-from ..graphmert.compiler import GraphMERTData, FactTriple
+from ..graphmert.compiler import GraphMERTData
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +90,7 @@ class ConvexSeeder:
         else:
             result = await self._real_seed(payload)
         
-        logger.info(f"Seeding complete:")
+        logger.info("Seeding complete:")
         logger.info(f"  Person: {result['person_name']}")
         logger.info(f"  Nodes seeded: {result['nodes_seeded']}")
         logger.info(f"  Facts seeded: {result['facts_seeded']}")
@@ -186,7 +189,6 @@ class ConvexSeeder:
         logger.debug(f"[MOCK] Payload size: {len(json.dumps(payload))} bytes")
         
         # Save to local file for inspection
-        import os
         from pathlib import Path
         
         backup_dir = Path("./logs/graphmert_seeds")
