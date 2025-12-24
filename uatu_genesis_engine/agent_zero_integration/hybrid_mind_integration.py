@@ -17,20 +17,21 @@ This is the final piece that brings the "Hybrid Mind" online.
 """
 import asyncio
 import logging
+import os
 import time
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 
-from ..utils.graphmert_client import GraphMERTClient, GraphMERTResponse
+from ..utils.graphmert_client import GraphMERTClient
 from ..utils.hybrid_config import get_config
 from .neurotransmitter_engine import (
     NeurotransmitterEngine,
     Stimulus,
-    NeurotransmitterState,
-    EmotionalFlags
+    NeurotransmitterState
 )
-from .dialectic_inference import DialecticInference, DialecticalChain
+from .dialectic_inference import DialecticInference
 from .convex_state_logger import ConvexStateLogger
 
 logger = logging.getLogger(__name__)
@@ -179,11 +180,42 @@ class HybridMindIntegration:
         logger.info("=" * 80)
     
     async def start(self):
-        """Start asynchronous subsystems (ConvexStateLogger)."""
+        """Start asynchronous subsystems (ConvexStateLogger) and Emergence Gate."""
         if self.convex_logger and not self.started:
             await self.convex_logger.start()
             self.started = True
             logger.info("Asynchronous subsystems started")
+
+        # Initialize Emergence Gate tied to persona (if available via env)
+        try:
+            from .emergence_gate import EmergenceGate, GateState
+            persona_prompts = os.environ.get("AGENT_PROMPTS_DIR")
+            if persona_prompts:
+                persona_root = Path(persona_prompts).parent
+                gate_dir = persona_root / "emergence_gate"
+            else:
+                gate_dir = Path("./emergence_gate")
+
+            self.emergence_gate = EmergenceGate(storage_dir=str(gate_dir), convex_logger=self.convex_logger)
+
+            # If gate is in TALK_ONLY, reflect in env for other components
+            if self.emergence_gate.get_state() == GateState.TALK_ONLY:
+                os.environ["WORKSHOP_TALK_ONLY"] = "true"
+
+            # Register graceful shutdown to stop subsystems
+            def _shutdown_cb():
+                try:
+                    loop = asyncio.get_running_loop()
+                    loop.create_task(self.stop())
+                except RuntimeError:
+                    # Not in event loop; run in a thread
+                    import threading
+                    threading.Thread(target=lambda: __import__("asyncio").run(self.stop())).start()
+
+            self.emergence_gate.register_shutdown_callback(_shutdown_cb)
+            logger.info("Emergence Gate initialized and connected to Convex logger")
+        except Exception:
+            logger.exception("Failed to initialize Emergence Gate")
     
     async def stop(self):
         """Stop asynchronous subsystems."""
@@ -293,7 +325,7 @@ class HybridMindIntegration:
                 user_input, context
             )
             state.dialectical_chain = dialectical_chain.to_dict()
-            logger.info(f"  ✓ Dialectical chain generated")
+            logger.info("  ✓ Dialectical chain generated")
         else:
             logger.info("Step 3/5: Dialectic SKIPPED (disabled)")
         
@@ -302,7 +334,7 @@ class HybridMindIntegration:
         if dialectical_chain and self.dialectic_config['use_synthesis_output']:
             # Use synthesis as final output
             state.final_response = dialectical_chain.synthesis.content
-            logger.info(f"  ✓ Using dialectical synthesis")
+            logger.info("  ✓ Using dialectical synthesis")
         else:
             # Fallback: Use triples or raw input
             if graphmert_response and self.agent_loop_config['reason_on_triples']:
@@ -312,10 +344,10 @@ class HybridMindIntegration:
                     for triple in graphmert_response.fact_triples
                 ])
                 state.final_response = f"[RESPONSE BASED ON TRIPLES]\n{triple_context}"
-                logger.info(f"  ✓ Using triples for reasoning")
+                logger.info("  ✓ Using triples for reasoning")
             else:
                 state.final_response = f"[RESPONSE TO: {user_input}]"
-                logger.info(f"  ✓ Using raw input")
+                logger.info("  ✓ Using raw input")
         
         # Step 5: Record - Log to Convex
         if self.convex_logger:
@@ -358,7 +390,7 @@ class HybridMindIntegration:
                     }
                 )
             
-            logger.info(f"  ✓ State logged to Convex")
+            logger.info("  ✓ State logged to Convex")
         else:
             logger.info("Step 5/5: Convex SKIPPED (disabled)")
         

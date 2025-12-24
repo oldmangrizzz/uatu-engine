@@ -80,7 +80,7 @@ async def demonstrate_neural_bridge():
         
         # GraphMERT Triples
         if state.graphmert_response:
-            print(f"\n[1] GraphMERT Truth Filter:")
+            print("\n[1] GraphMERT Truth Filter:")
             triples = state.graphmert_response['fact_triples']
             print(f"    Extracted {len(triples)} fact triple(s):")
             for triple in triples:
@@ -91,7 +91,7 @@ async def demonstrate_neural_bridge():
         
         # Neurotransmitter State
         if state.neurotransmitter_state:
-            print(f"\n[2] Neurotransmitter Engine (Digital Psyche):")
+            print("\n[2] Neurotransmitter Engine (Digital Psyche):")
             nt = state.neurotransmitter_state
             print(f"    Dopamine:  {nt['dopamine']:.3f} (reward/anticipation)")
             print(f"    Serotonin: {nt['serotonin']:.3f} (stability/harmony)")
@@ -107,20 +107,20 @@ async def demonstrate_neural_bridge():
         
         # LLM Modifiers
         modifiers = mind.get_llm_modifiers()
-        print(f"\n[3] LLM Parameter Modifiers:")
+        print("\n[3] LLM Parameter Modifiers:")
         print(f"    Temperature: {modifiers['temperature']} (creativity)")
         print(f"    Top-P: {modifiers['top_p']} (token selection)")
         
         # Dialectical Reasoning
         if state.dialectical_chain:
-            print(f"\n[4] Dialectical Reasoning (Zord Theory):")
+            print("\n[4] Dialectical Reasoning (Zord Theory):")
             chain = state.dialectical_chain
             print(f"    Thesis:     {chain['thesis']['content'][:80]}...")
             print(f"    Antithesis: {chain['antithesis']['content'][:80]}...")
             print(f"    Synthesis:  {chain['synthesis']['content'][:80]}...")
         
         # Metadata
-        print(f"\n[5] Processing Metadata:")
+        print("\n[5] Processing Metadata:")
         print(f"    Processing Time: {state.processing_time_ms:.2f}ms")
         print(f"    Logged to Convex: {'Yes' if state.subsystems_enabled['convex'] else 'No'}")
         
@@ -133,20 +133,20 @@ async def demonstrate_neural_bridge():
     
     stats = mind.get_statistics()
     print(f"Total Interactions: {stats['total_interactions']}")
-    print(f"\nSubsystems Status:")
+    print("\nSubsystems Status:")
     for system, enabled in stats['subsystems_enabled'].items():
         print(f"  {system.capitalize()}: {'ENABLED' if enabled else 'DISABLED'}")
     
     if 'graphmert_stats' in stats:
         gm_stats = stats['graphmert_stats']
-        print(f"\nGraphMERT Statistics:")
+        print("\nGraphMERT Statistics:")
         print(f"  Total Requests: {gm_stats['total_requests']}")
         print(f"  Total Triples Extracted: {gm_stats['total_triples_extracted']}")
         print(f"  Avg Triples/Request: {gm_stats['average_triples_per_request']:.2f}")
     
     if 'convex_stats' in stats:
         cv_stats = stats['convex_stats']
-        print(f"\nConvex Logger Statistics:")
+        print("\nConvex Logger Statistics:")
         print(f"  Total Logged: {cv_stats['total_logged']}")
         print(f"  Total Flushed: {cv_stats['total_flushed']}")
         print(f"  Buffer Size: {cv_stats['buffer_size']}")

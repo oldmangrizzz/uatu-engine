@@ -1,7 +1,7 @@
 from typing import Any
 from python.helpers.extension import Extension
 from python.helpers import files, persist_chat
-import os, re
+import os
 
 LEN_MIN = 500
 

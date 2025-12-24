@@ -63,35 +63,46 @@ class KnowledgeDomainAgent(BaseAgent):
     
     async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Map knowledge domains for the character."""
+        from typing import cast
         logger.info(f"Knowledge Domain Agent mapping domains for: {character_name}")
         
-        results = {
+        # Explicitly typed containers to satisfy mypy
+        knowledge_domains: List[Dict[str, Any]] = []
+        sources_list: List[str] = []
+        results: Dict[str, Any] = {
             "character_name": character_name,
-            "knowledge_domains": [],
+            "knowledge_domains": knowledge_domains,
             "skills": [],
-            "sources": []
+            "sources": sources_list
         }
         
         # Get character info from context
-        occupations = context.get("occupations", [])
-        multiversal_identities = context.get("multiversal_identities", [])
-        
+        occupations = list(context.get("occupations", []))
+        multiversal_identities = list(context.get("multiversal_identities", []))
+
         # Search for skill and ability information
-        sources = context.get("sources", [])
+        sources = list(context.get("sources", []))
         
         for source in sources[:5]:  # Limit to prevent too many requests
             html = await self.fetch_url(source)
             if html:
                 domains = self._extract_knowledge_domains(html, character_name, occupations)
-                results["knowledge_domains"].extend(domains)
-                if domains:
-                    results["sources"].append(source)
+                # Ensure we work with a list
+                if isinstance(domains, list):
+                    knowledge_domains.extend(cast(List[Dict[str, Any]], domains))
+                    if domains:
+                        sources_list.append(source)
         
         # Map to Earth-1218 equivalents
-        results["knowledge_domains"] = self._map_to_earth_1218(results["knowledge_domains"])
+        knowledge_domains = self._map_to_earth_1218(knowledge_domains)
         
-        # Deduplicate
-        results["knowledge_domains"] = self._deduplicate_domains(results["knowledge_domains"])
+        # Deduplicate - ensure list typing for mypy
+        knowledge_domains = list(self._deduplicate_domains(knowledge_domains))
+        results["knowledge_domains"] = knowledge_domains
+        results["sources"] = sources_list
+        
+        logger.info(f"Mapped {len(results['knowledge_domains'])} knowledge domains for {character_name}")
+        return results
         
         logger.info(f"Mapped {len(results['knowledge_domains'])} knowledge domains for {character_name}")
         return results

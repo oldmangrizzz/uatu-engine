@@ -4,9 +4,8 @@ Unit tests for RSIGenerator
 Tests the Residual Self-Image Generator for AI personas.
 """
 import os
-import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch
 import tempfile
 import shutil
 

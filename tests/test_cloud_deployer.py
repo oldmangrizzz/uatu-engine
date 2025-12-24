@@ -5,8 +5,7 @@ Tests the cloud deployment system for AI personas to Hugging Face Spaces.
 """
 import os
 import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from uatu_genesis_engine.deployment.cloud_deployer import CloudDeployer, AuthenticationError
 
 
@@ -264,7 +263,6 @@ class TestCloudDeployer:
         deployer = CloudDeployer(hf_token="valid_token")
         
         # Change to temp directory
-        import os
         orig_cwd = os.getcwd()
         try:
             os.chdir(tmp_path)

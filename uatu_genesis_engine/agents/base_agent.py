@@ -4,7 +4,7 @@ Base agent class for the swarm framework.
 import asyncio
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import aiohttp
 from bs4 import BeautifulSoup
 
@@ -50,6 +50,12 @@ class BaseAgent(ABC):
 
         for attempt in range(1, max_attempts + 1):
             try:
+                if not self.session:
+                    # Should not happen, but handle gracefully
+                    await asyncio.sleep(0.1)
+                    continue
+                # Tell type checkers that session is not None
+                assert self.session is not None
                 async with self.session.get(url) as response:
                     if response.status == 200:
                         return await response.text()

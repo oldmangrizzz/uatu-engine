@@ -1,8 +1,3 @@
-import platform
-import select
-import subprocess
-import time
-import sys
 from typing import Optional, Tuple
 from python.helpers import tty_session, runtime
 from python.helpers.shell_ssh import clean_string

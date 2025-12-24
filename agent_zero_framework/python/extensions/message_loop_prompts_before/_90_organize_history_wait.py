@@ -1,7 +1,6 @@
 from python.helpers.extension import Extension
 from agent import LoopData
 from python.extensions.message_loop_end._10_organize_history import DATA_NAME_TASK
-import asyncio
 
 
 class OrganizeHistoryWait(Extension):

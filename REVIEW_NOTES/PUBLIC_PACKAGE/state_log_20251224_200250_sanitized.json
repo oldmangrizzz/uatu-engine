@@ -1,0 +1,91 @@
+{
+  "timestamp": "2025-12-24T20:02:50.147337",
+  "count": 4,
+  "entries": [
+    {
+      "entry_type": "interaction",
+      "timestamp": "2025-12-24T20:02:50.147008",
+      "data": {
+        "user_input": "<REDACTED PUBLIC SAMPLE>",
+        "agent_output": "<REDACTED PUBLIC SAMPLE>"
+      },
+      "metadata": {
+        "interaction_number": 1,
+        "graphmert_enabled": true,
+        "neurotransmitter_enabled": true,
+        "dialectic_enabled": true
+      },
+      "level": "info"
+    },
+    {
+      "entry_type": "neurotransmitter",
+      "timestamp": "2025-12-24T20:02:50.147026",
+      "data": {
+        "dopamine": 0.5,
+        "serotonin": 0.5500000979429504,
+        "cortisol": 0.3449996079345298
+      },
+      "metadata": {
+        "flags": {
+          "defensive_posture": false,
+          "high_motivation": false,
+          "emotional_instability": false,
+          "balanced_state": false
+        }
+      },
+      "level": "debug"
+    },
+    {
+      "entry_type": "dialectical_chain",
+      "timestamp": "2025-12-24T20:02:50.147039",
+      "data": {
+        "user_input": "I need help with the Wayne Enterprises security breach.",
+        "thesis": {
+          "stage": "thesis",
+          "content": "<REDACTED PUBLIC SAMPLE>",
+          "reasoning": "Generated from objective, helpful assistant perspective",
+          "confidence": 0.9,
+          "bias_influence": 0.0
+        },
+        "antithesis": {
+          "stage": "antithesis",
+          "content": "<REDACTED PUBLIC SAMPLE>",
+          "reasoning": "Driven by core constants: Innovation, Ethics",
+          "confidence": 0.7,
+          "bias_influence": 1.0
+        },
+        "synthesis": {
+          "stage": "synthesis",
+          "content": "<REDACTED PUBLIC SAMPLE>",
+          "reasoning": "Reconciles thesis (bias: 0.0) with antithesis (bias: 1.0)",
+          "confidence": 0.95,
+          "bias_influence": 0.6
+        },
+        "final_output": "<REDACTED PUBLIC SAMPLE>",
+        "metadata": {
+          "archetype": "Tech Genius",
+          "core_drive": "Protect through technology",
+          "context": {}
+        },
+        "created_at": "2025-12-24T20:02:50.146973"
+      },
+      "metadata": {},
+      "level": "info"
+    },
+    {
+      "entry_type": "emotional_event",
+      "timestamp": "2025-12-24T20:02:50.147053",
+      "data": {
+        "event_type": "user_interaction",
+        "description": "User input (toxicity: 0.15, urgency: 0.50)",
+        "emotional_impact": {
+          "dopamine": 0.0,
+          "serotonin": 0.05,
+          "cortisol": 0.045
+        }
+      },
+      "metadata": {},
+      "level": "info"
+    }
+  ]
+}

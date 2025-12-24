@@ -17,7 +17,6 @@ from typing import (
 from litellm import completion, acompletion, embedding
 import litellm
 import openai
-from litellm.types.utils import ModelResponse
 
 from python.helpers import dotenv
 from python.helpers import settings, dirty_json
@@ -25,7 +24,7 @@ from python.helpers.dotenv import load_dotenv
 from python.helpers.providers import get_provider_config
 from python.helpers.rate_limiter import RateLimiter
 from python.helpers.tokens import approximate_tokens
-from python.helpers import dirty_json, browser_use_monkeypatch
+from python.helpers import browser_use_monkeypatch
 
 from langchain_core.language_models.chat_models import SimpleChatModel
 from langchain_core.outputs.chat_generation import ChatGenerationChunk
@@ -281,7 +280,8 @@ def apply_rate_limiter_sync(
 ):
     if not model_config:
         return
-    import asyncio, nest_asyncio
+    import asyncio
+    import nest_asyncio
 
     nest_asyncio.apply()
     return asyncio.run(
@@ -371,7 +371,6 @@ class LiteLLMChatWrapper(SimpleChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
-        import asyncio
 
         msgs = self._convert_messages(messages)
 
@@ -395,7 +394,6 @@ class LiteLLMChatWrapper(SimpleChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> Iterator[ChatGenerationChunk]:
-        import asyncio
 
         msgs = self._convert_messages(messages)
 
@@ -580,7 +578,7 @@ class AsyncAIChatReplacement:
         self.chat = AsyncAIChatReplacement._Chat(wrapper)
 
 
-from browser_use.llm import ChatOllama, ChatOpenRouter, ChatGoogle, ChatAnthropic, ChatGroq, ChatOpenAI
+from browser_use.llm import ChatOpenRouter, ChatGoogle
 
 class BrowserCompatibleChatWrapper(ChatOpenRouter):
     """
@@ -652,7 +650,7 @@ class BrowserCompatibleChatWrapper(ChatOpenRouter):
                 if resp.choices[0].message.content is not None and not resp.choices[0].message.content.startswith("{"): # type: ignore
                     js = dirty_json.parse(resp.choices[0].message.content) # type: ignore
                     resp.choices[0].message.content = dirty_json.stringify(js) # type: ignore
-        except Exception as e:
+        except Exception:
             pass
 
         return resp

@@ -8,7 +8,6 @@ from python.helpers import guids
 from langchain_community.vectorstores import FAISS
 
 # faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
-from python.helpers import faiss_monkey_patch
 import faiss
 
 
@@ -16,9 +15,9 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores.utils import (
     DistanceStrategy,
 )
-from langchain_core.embeddings import Embeddings
 
-import os, json
+import os
+import json
 
 import numpy as np
 
@@ -26,7 +25,7 @@ from python.helpers.print_style import PrintStyle
 from . import files
 from langchain_core.documents import Document
 from python.helpers import knowledge_import
-from python.helpers.log import Log, LogItem
+from python.helpers.log import LogItem
 from enum import Enum
 from agent import Agent, AgentContext
 import models

@@ -849,7 +849,7 @@ class MCPClientBase(ABC):
                         original_exception = e
                     # Create a dummy exception to break out of the async block
                     raise RuntimeError("Dummy exception to break out of async block")
-        except Exception as e:
+        except Exception:
             # Check if this is our dummy exception
             if original_exception is not None:
                 e = original_exception

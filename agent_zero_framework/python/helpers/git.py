@@ -1,6 +1,5 @@
 from git import Repo
 from datetime import datetime
-import os
 from python.helpers import files
 
 def get_git_info():

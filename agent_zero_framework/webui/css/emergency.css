@@ -1,0 +1,123 @@
+/* ============================================================
+   CONSTRUCT - Emergency Fallback Mode
+   Minimal aesthetic for hardware issues
+   ============================================================ */
+
+body.emergency-mode {
+    background: #000;
+    color: #d4d4d4;
+    font-family: "Courier New", monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+body.emergency-mode::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.02) 2px,
+        transparent 4px
+    );
+    pointer-events: none;
+}
+
+.emergency-container {
+    padding: 2rem;
+    max-width: 600px;
+    border: 2px solid #ff4444;
+    background: #111;
+}
+
+.emergency-banner {
+    padding: 1rem;
+    margin-bottom: 2rem;
+    border: 2px dashed #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.emergency-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ff4444;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 0.5rem 0;
+}
+
+.emergency-message {
+    font-size: 0.875rem;
+    color: #888;
+    line-height: 1.5;
+}
+
+.emergency-status {
+    font-size: 0.75rem;
+    color: #666;
+    margin: 1rem 0 0.5rem 0;
+    font-family: monospace;
+}
+
+.emergency-actions {
+    margin-top: 1.5rem;
+}
+
+.emergency-btn {
+    padding: 0.75rem 1.5rem;
+    margin-right: 0.5rem;
+    border: 2px solid #666;
+    background: #222;
+    color: #d4d4d4;
+    cursor: pointer;
+    font-family: "Courier New", monospace;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+}
+
+.emergency-btn.primary {
+    background: #4248f1;
+    border-color: #4248f1;
+}
+
+.emergency-btn:hover {
+    background: #555;
+    border-color: #888;
+}
+
+.emergency-form {
+    margin-top: 2rem;
+}
+
+.emergency-input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 2px solid #333;
+    background: #0f0f0f;
+    color: #d4d4d4;
+    font-family: "Courier New", monospace;
+    font-size: 0.875rem;
+}
+
+.emergency-input:focus {
+    outline: none;
+    border-color: #4248f1;
+}
+
+.emergency-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+    color: #555;
+    font-size: 0.75rem;
+    text-align: center;
+}

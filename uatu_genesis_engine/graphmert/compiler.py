@@ -10,17 +10,13 @@ Example:
 """
 import logging
 import re
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
-from pydantic import BaseModel
 
 from ..models import (
     CharacterProfile,
-    KnowledgeDomain,
-    EconomicEvent,
-    MultiversalIdentity,
-    TimeSeriesEvent
+    EconomicEvent
 )
 
 logger = logging.getLogger(__name__)
@@ -108,9 +104,9 @@ class GraphMERTCompiler:
         Returns:
             GraphMERTData containing the compiled knowledge graph
         """
-        logger.info(f"=" * 80)
+        logger.info("=" * 80)
         logger.info(f"COMPILING GRAPHMERT FOR: {profile.primary_name}")
-        logger.info(f"=" * 80)
+        logger.info("=" * 80)
         
         # Reset state
         self.fact_triples = []
@@ -144,11 +140,11 @@ class GraphMERTCompiler:
             }
         )
         
-        logger.info(f"Compilation complete:")
+        logger.info("Compilation complete:")
         logger.info(f"  Nodes: {graph_data.node_count}")
         logger.info(f"  Edges (Facts): {graph_data.edge_count}")
         logger.info(f"  Root Invariants: {len(root_invariants)}")
-        logger.info(f"=" * 80)
+        logger.info("=" * 80)
         
         return graph_data
     
@@ -431,7 +427,7 @@ class GraphMERTCompiler:
     
     def get_statistics(self) -> Dict[str, Any]:
         """Get compilation statistics."""
-        predicate_types = {}
+        predicate_types: Dict[str, int] = {}
         for triple in self.fact_triples:
             predicate_types[triple.predicate_type] = predicate_types.get(triple.predicate_type, 0) + 1
         

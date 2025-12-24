@@ -11,7 +11,7 @@ emotional states are governed by mathematical rules rather than arbitrary text.
 """
 import time
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -117,7 +117,7 @@ class NeurotransmitterEngine:
             self.cortisol_decay = self.CORTISOL_DECAY
         
         self.flags = EmotionalFlags()
-        self.update_history = []
+        self.update_history: List[Dict[str, Any]] = []
         
         logger.info("NeurotransmitterEngine initialized")
         logger.debug(f"Initial state: {self.state}")

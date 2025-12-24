@@ -22,7 +22,7 @@ class Poll(ApiHandler):
         if ctxid:
             try:
                 context = self.use_context(ctxid, create_if_not_exists=False)
-            except Exception as e:
+            except Exception:
                 context = None
         else:
             context = None

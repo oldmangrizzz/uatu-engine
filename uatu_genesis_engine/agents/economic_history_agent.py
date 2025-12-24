@@ -2,7 +2,7 @@
 Agent for gathering economic history and financial information.
 """
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import re
 from urllib.parse import quote_plus
 from .base_agent import BaseAgent
@@ -20,16 +20,24 @@ class EconomicHistoryAgent(BaseAgent):
         """Gather economic history information."""
         logger.info(f"Economic History Agent gathering data for: {character_name}")
         
+        from typing import List, Dict, Any as _Any
+
+        # Explicitly typed containers to satisfy static typing
+        economic_events: List[Dict[str, _Any]] = []
+        wealth_estimates: List[Dict[str, _Any]] = []
+        business_ventures: List[Dict[str, _Any]] = []
+        sources_list: List[str] = []
+
         results = {
             "character_name": character_name,
-            "economic_events": [],
-            "wealth_estimates": [],
-            "business_ventures": [],
-            "sources": []
+            "economic_events": economic_events,
+            "wealth_estimates": wealth_estimates,
+            "business_ventures": business_ventures,
+            "sources": sources_list
         }
         
         # Search for economic information
-        sources_to_check = context.get("sources", [])
+        sources_to_check = list(context.get("sources", []))
         
         # Add specialized economic search terms
         search_queries = [
@@ -53,10 +61,12 @@ class EconomicHistoryAgent(BaseAgent):
             if html:
                 economic_data = self._extract_economic_data(html, character_name)
                 if economic_data:
-                    results["economic_events"].extend(economic_data.get("events", []))
-                    if economic_data.get("wealth_estimate"):
-                        results["wealth_estimates"].append(economic_data["wealth_estimate"])
-                    results["sources"].append(url)
+                    events = economic_data.get("events") or []
+                    economic_events.extend(events)
+                    wealth = economic_data.get("wealth_estimate")
+                    if wealth:
+                        wealth_estimates.append(wealth)
+                    sources_list.append(url)
         
         logger.info(f"Found {len(results['economic_events'])} economic events for {character_name}")
         return results
@@ -64,10 +74,8 @@ class EconomicHistoryAgent(BaseAgent):
     def _extract_economic_data(self, html: str, character_name: str) -> Dict[str, Any]:
         """Extract economic data from HTML content."""
         soup = self.parse_html(html)
-        data = {
-            "events": [],
-            "wealth_estimate": None
-        }
+        events: List[Dict[str, Any]] = []
+        wealth_estimate: Optional[Dict[str, Any]] = None
         
         # Look for wealth mentions in text
         text = soup.get_text()
@@ -79,7 +87,7 @@ class EconomicHistoryAgent(BaseAgent):
         if matches:
             # Try to extract the largest amount as wealth estimate
             max_amount = self._parse_monetary_value(matches[0])
-            data["wealth_estimate"] = {
+            wealth_estimate = {
                 "amount": max_amount,
                 "currency": "USD",
                 "source": "estimated"
@@ -94,12 +102,12 @@ class EconomicHistoryAgent(BaseAgent):
                 sentences = p_text.split('.')
                 for sentence in sentences:
                     if character_name.lower() in sentence.lower():
-                        data["events"].append({
+                        events.append({
                             "description": sentence.strip(),
                             "type": "business_activity"
                         })
         
-        return data
+        return {"events": events, "wealth_estimate": wealth_estimate}
     
     def _parse_monetary_value(self, value_str: str) -> float:
         """Parse a monetary string to a float value."""
@@ -123,5 +131,5 @@ class EconomicHistoryAgent(BaseAgent):
             
             base_value = float(value_str)
             return base_value * multiplier
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError):
             return 0.0

@@ -350,7 +350,7 @@ class SecureBootProtocol:
                 "verification_details": result["verification_details"]
             }
             
-        except IntegrityViolationError as e:
+        except IntegrityViolationError:
             logger.error("=" * 80)
             logger.error("❌ BOOT DENIED - HARD LOCK ENGAGED ❌")
             logger.error("Soul anchor integrity compromised")

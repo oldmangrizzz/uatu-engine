@@ -11,7 +11,9 @@
 # """
 
 # faiss_monkey_patch.py  – import this before faiss -----------------
-import sys, types, numpy as np
+import sys
+import types
+import numpy as np
 from types import SimpleNamespace
 
 # fake numpy.distutils and numpy.distutils.cpuinfo packages
@@ -33,4 +35,3 @@ sys.modules["numpy.distutils.cpuinfo"] = cpuinfo
 np.distutils = dist # type: ignore
 # -------------------------------------------------------------------
 
-import faiss

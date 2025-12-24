@@ -1,4 +1,6 @@
-import asyncio, random, string
+import asyncio
+import random
+import string
 import nest_asyncio
 
 nest_asyncio.apply()
@@ -6,9 +8,8 @@ nest_asyncio.apply()
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Awaitable, Coroutine, Dict, Literal
+from typing import Any, Awaitable, Coroutine, Dict
 from enum import Enum
-import uuid
 import models
 
 from python.helpers import extract_tools, files, errors, history, tokens, context as context_helper
@@ -452,7 +453,7 @@ class Agent:
                                 return tools_result  # break the execution if the task is done
 
                     # exceptions inside message loop:
-                    except InterventionException as e:
+                    except InterventionException:
                         pass  # intervention message has been handled in handle_intervention(), proceed with conversation loop
                     except RepairableException as e:
                         # Forward repairable errors to the LLM, maybe it can fix them
@@ -472,7 +473,7 @@ class Agent:
                         )
 
             # exceptions outside message loop:
-            except InterventionException as e:
+            except InterventionException:
                 pass  # just start over
             except Exception as e:
                 self.handle_critical_exception(e)
@@ -885,7 +886,7 @@ class Agent:
                     parsed=response,
                 )
 
-        except Exception as e:
+        except Exception:
             pass
 
     def get_tool(
@@ -911,7 +912,7 @@ class Agent:
                 classes = extract_tools.load_classes_from_file(
                     "python/tools/" + name + ".py", Tool  # type: ignore[arg-type]
                 )
-            except Exception as e:
+            except Exception:
                 pass
         tool_class = classes[0] if classes else Unknown
         return tool_class(

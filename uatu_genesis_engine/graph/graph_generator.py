@@ -3,7 +3,7 @@ Graph generation for visualizing multiversal history as a DAG.
 """
 import networkx as nx
 import matplotlib.pyplot as plt
-from typing import Dict, Any, List
+from typing import Dict, Any
 import logging
 import os
 

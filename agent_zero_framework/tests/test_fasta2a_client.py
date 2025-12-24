@@ -3,7 +3,8 @@
 Test script to verify FastA2A agent card routing and authentication.
 """
 
-import sys, os
+import sys
+import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 

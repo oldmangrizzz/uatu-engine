@@ -1,7 +1,5 @@
 from python.helpers.api import ApiHandler, Request, Response
 from python.helpers.memory import Memory, get_existing_memory_subdirs, get_context_memory_subdir
-from python.helpers import files
-from models import ModelConfig, ModelType
 from langchain_core.documents import Document
 from agent import AgentContext
 
@@ -96,7 +94,7 @@ class MemoryDashboard(ApiHandler):
             else:
                 return {
                     "success": False,
-                    "error": f"Failed to delete any memories.",
+                    "error": "Failed to delete any memories.",
                 }
 
         except Exception as e:

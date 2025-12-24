@@ -133,7 +133,7 @@ def _get_rfc_password() -> str:
 def _get_rfc_url() -> str:
     set = settings.get_settings()
     url = set["rfc_url"]
-    if not "://" in url:
+    if "://" not in url:
         url = "http://" + url
     if url.endswith("/"):
         url = url[:-1]

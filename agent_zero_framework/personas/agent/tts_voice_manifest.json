@@ -1,0 +1,10 @@
+{
+  "engine": "neutts-air",
+  "persona": "persona",
+  "archetype": "unknown",
+  "style_tokens": [],
+  "lexical_seeds": [],
+  "memory_seed_notes": [],
+  "ethics_alignment": "",
+  "dataset_instruction": "Generate synthetic utterances grounded in soul anchor constants and knowledge domains; do not clone external voices."
+}

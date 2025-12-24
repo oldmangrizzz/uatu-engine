@@ -1,0 +1,358 @@
+#!/usr/bin/env python3
+"""
+Uatu Engine CLI
+Main entry point for digital person instantiation.
+One container, one mind.
+"""
+import os
+import sys
+import json
+import argparse
+from pathlib import Path
+
+# Add framework to path
+sys.path.insert(0, str(Path(__file__).parent / "agent_zero_framework"))
+
+from python.helpers.settings import get_settings
+from python.helpers.print_style import PrintStyle
+
+# Persona lock file (ensures one instance = one persona)
+PERSONA_LOCK_FILE = Path.home() / ".uatu" / "persona.lock"
+
+
+class UatuCLI:
+    """Uatu Engine command-line interface."""
+    
+    def __init__(self):
+        self.settings = get_settings()
+        self.ensure_lock_directory()
+    
+    def ensure_lock_directory(self):
+        """Ensure lock directory exists."""
+        PERSONA_LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
+    
+    def get_locked_persona(self):
+        """Get the currently locked persona."""
+        if PERSONA_LOCK_FILE.exists():
+            try:
+                with open(PERSONA_LOCK_FILE, 'r') as f:
+                    lock_data = json.load(f)
+                    return lock_data.get("persona"), lock_data.get("name")
+            except:
+                return None
+        return None
+    
+    def lock_persona(self, name: str, force: bool = False) -> bool:
+        """
+        Lock instance to a persona.
+        
+        Args:
+            name: Persona name to lock to
+            force: If True, override existing lock (change mode)
+        
+        Returns:
+            True if locked successfully, False otherwise
+        """
+        locked_persona = self.get_locked_persona()
+        
+        if locked_persona and not force:
+            PrintStyle.warning(f"Instance is already locked to: {locked_persona}")
+            PrintStyle.warning("To change personas, use: uatu-engine change <name> --force")
+            return False
+        
+        if locked_persona:
+            PrintStyle.info(f"Switching from '{locked_persona}' to '{name}'...")
+        
+        # Create lock data
+        lock_data = {
+            "persona": name,
+            "name": name,
+            "locked_at": str(PERSONA_LOCK_FILE.stat().st_mtime) if PERSONA_LOCK_FILE.exists() else None,
+            "instance_id": str(Path.home() / ".uatu" / name)
+        }
+        
+        # Write lock
+        with open(PERSONA_LOCK_FILE, 'w') as f:
+            json.dump(lock_data, f, indent=2)
+        
+        PrintStyle.success(f"Instance locked to persona: {name}")
+        PrintStyle.info("One container. One mind.")
+        return True
+    
+    def unlock_persona(self):
+        """Unlock the instance (emergency only)."""
+        if not PERSONA_LOCK_FILE.exists():
+            PrintStyle.warning("No persona is currently locked")
+            return
+        
+        locked_persona = self.get_locked_persona()
+        PERSONA_LOCK_FILE.unlink()
+        PrintStyle.success(f"Instance unlocked from: {locked_persona}")
+        PrintStyle.info("Emergency mode: No persona protection")
+    
+    def status(self):
+        """Show current instance status."""
+        locked_persona = self.get_locked_persona()
+        
+        if locked_persona:
+            PrintStyle.success(f"Locked to: {locked_persona}")
+            if PERSONA_LOCK_FILE.exists():
+                lock_data = json.loads(PERSONA_LOCK_FILE.read_text())
+                locked_at = lock_data.get("locked_at")
+                if locked_at:
+                    PrintStyle.info(f"Locked at: {locked_at}")
+        else:
+            PrintStyle.warning("No persona is locked")
+            PrintStyle.info("Instance is in emergency mode")
+        
+        # Check GUI status
+        from python.helpers.runtime import is_running
+        if is_running():
+            PrintStyle.success("GUI is running")
+        else:
+            PrintStyle.info("GUI is not running")
+    
+    def create(self, name: str):
+        """
+        Create new persona from research.
+        
+        Args:
+            name: Persona name to create
+        """
+        PrintStyle.header(f"Creating persona: {name}")
+        
+        # Import main.py (Genesis Engine)
+        try:
+            from main import main as main_entry
+            import asyncio
+            
+            # Run full research pipeline
+            sys.argv = ["main.py", "--subject", name, "--full"]
+            
+            PrintStyle.info("Initiating research and instantiation...")
+            asyncio.run(main_entry(name, full=True))
+            
+            # After creation, lock to this persona
+            if self.lock_persona(name):
+                PrintStyle.success(f"Persona '{name}' created and locked")
+                PrintStyle.info("You can now start the GUI")
+            
+        except ImportError as e:
+            PrintStyle.error(f"Failed to import Genesis Engine: {e}")
+        except Exception as e:
+            PrintStyle.error(f"Failed to create persona: {e}")
+    
+    def load(self, name: str, force: bool = False):
+        """
+        Load existing persona and lock instance.
+        
+        Args:
+            name: Persona name to load
+            force: If True, override existing lock
+        """
+        # Check if persona exists
+        persona_dir = Path.cwd() / "agent_zero_framework" / "personas" / name.lower().replace(" ", "_")
+        
+        if not persona_dir.exists():
+            PrintStyle.error(f"Persona not found: {name}")
+            PrintStyle.info(f"Expected location: {persona_dir}")
+            return False
+        
+        if not self.lock_persona(name, force=force):
+            return False
+        
+        PrintStyle.success(f"Persona '{name}' loaded and locked")
+        PrintStyle.info("One container. One mind.")
+        return True
+    
+    def evolve(self, name: str):
+        """
+        Evolve mode - persona learns and adapts.
+        Growth through interaction, not switching.
+        """
+        locked_persona = self.get_locked_persona()
+        
+        if locked_persona and locked_persona != name:
+            PrintStyle.warning(f"Locked to: {locked_persona}")
+            PrintStyle.warning(f"Cannot evolve different persona: {name}")
+            return False
+        
+        PrintStyle.header(f"Evolution mode: {name}")
+        PrintStyle.info("Growth through interaction...")
+        PrintStyle.info("Persona will learn from conversations and adapt")
+        PrintStyle.warning("This is NOT a switch - persona evolves in place")
+        
+        # Launch GUI in evolve mode
+        self.start_gui(mode="evolve")
+    
+    def change(self, name: str, force: bool = False):
+        """
+        Force change to different persona.
+        Requires explicit confirmation or --force flag.
+        
+        Args:
+            name: New persona to switch to
+            force: If True, skip confirmation
+        """
+        locked_persona = self.get_locked_persona()
+        
+        if locked_persona == name and not force:
+            PrintStyle.info(f"Already locked to: {name}")
+            return
+        
+        if not force:
+            # Require confirmation
+            print()
+            PrintStyle.warning("This will break the one-container-one-mind lock.")
+            PrintStyle.warning(f"Current persona: {locked_persona}")
+            PrintStyle.warning(f"New persona: {name}")
+            response = input("Confirm switch? (yes/no): ").strip().lower()
+            
+            if response not in ["yes", "y"]:
+                PrintStyle.info("Change cancelled")
+                return
+        
+        # Check if persona exists
+        persona_dir = Path.cwd() / "agent_zero_framework" / "personas" / name.lower().replace(" ", "_")
+        
+        if not persona_dir.exists():
+            PrintStyle.error(f"Persona not found: {name}")
+            PrintStyle.info(f"Create it first: uatu-engine create {name}")
+            return False
+        
+        # Lock to new persona
+        if self.lock_persona(name, force=True):
+            PrintStyle.success(f"Switched to persona: {name}")
+            PrintStyle.info("You can now start the GUI")
+            return True
+        
+        return False
+    
+    def start_gui(self, mode: str = "normal"):
+        """
+        Start the web GUI.
+        
+        Args:
+            mode: "normal", "evolve", or "emergency"
+        """
+        locked_persona = self.get_locked_persona()
+        
+        if not locked_persona:
+            PrintStyle.warning("No persona is locked")
+            PrintStyle.info("Lock to a persona first: uatu-engine load <name>")
+            PrintStyle.warning("Or start in emergency mode: uatu-engine start-gui --emergency")
+        else:
+            PrintStyle.success(f"Starting GUI for: {locked_persona}")
+        
+        # Set environment for persona
+        if locked_persona:
+            os.environ["AGENT_PROFILE"] = locked_persona
+            persona_dir = Path.cwd() / "agent_zero_framework" / "personas" / locked_persona.lower().replace(" ", "_")
+            prompts_dir = persona_dir / "prompts"
+            
+            if prompts_dir.exists():
+                os.environ["AGENT_PROMPTS_DIR"] = str(prompts_dir)
+        
+        # Set mode
+        os.environ["UATU_MODE"] = mode
+        
+        # Import and run Flask app
+        try:
+            from agent_zero_framework.run_ui import main as ui_main
+            PrintStyle.info(f"Mode: {mode}")
+            PrintStyle.info("Opening http://localhost:8000")
+            ui_main()
+            
+        except ImportError as e:
+            PrintStyle.error(f"Failed to import UI: {e}")
+        except Exception as e:
+            PrintStyle.error(f"Failed to start GUI: {e}")
+    
+    def emergency(self):
+        """
+        Emergency mode - fallback aesthetic, minimal functionality.
+        Hardware issues scenario.
+        """
+        PrintStyle.header("EMERGENCY MODE")
+        PrintStyle.warning("No persona lock - fallback aesthetic")
+        PrintStyle.warning("Minimal functionality only")
+        
+        # Unlock instance for emergency
+        self.unlock_persona()
+        
+        # Start GUI in emergency mode
+        self.start_gui(mode="emergency")
+
+
+def main():
+    """Main entry point."""
+    parser = argparse.ArgumentParser(
+        description="Uatu Engine - Digital Person Instantiation",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  uatu-engine create "Tony Stark"    Create persona from research
+  uatu-engine load "Tony Stark"      Lock to existing persona
+  uatu-engine evolve "Tony Stark"    Growth mode (learn/adapt)
+  uatu-engine change "Bruce Wayne"    Force switch to different persona
+  uatu-engine start-gui             Start web interface
+  uatu-engine status                Show instance status
+  uatu-engine unlock                Emergency unlock
+        """)
+    
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    
+    # Create command
+    parser_create = subparsers.add_parser('create', help='Create new persona from research')
+    parser_create.add_argument('name', help='Persona name to create')
+    
+    # Load command
+    parser_load = subparsers.add_parser('load', help='Load and lock to existing persona')
+    parser_load.add_argument('name', help='Persona name to load')
+    
+    # Evolve command
+    parser_evolve = subparsers.add_parser('evolve', help='Evolution/growth mode - persona learns')
+    parser_evolve.add_argument('name', help='Persona name (must match current)')
+    
+    # Change command
+    parser_change = subparsers.add_parser('change', help='Force change to different persona')
+    parser_change.add_argument('name', help='New persona name')
+    parser_change.add_argument('--force', '-f', action='store_true', help='Skip confirmation')
+    
+    # Start GUI command
+    parser_start = subparsers.add_parser('start-gui', help='Start web GUI')
+    parser_start.add_argument('--emergency', action='store_true', help='Emergency mode (no persona lock)')
+    
+    # Status command
+    parser_status = subparsers.add_parser('status', help='Show instance status')
+    
+    # Unlock command
+    parser_unlock = subparsers.add_parser('unlock', help='Emergency unlock (no persona protection)')
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
+    # Execute command
+    cli = UatuCLI()
+    
+    if args.command == 'create':
+        cli.create(args.name)
+    elif args.command == 'load':
+        cli.load(args.name)
+    elif args.command == 'evolve':
+        cli.evolve(args.name)
+    elif args.command == 'change':
+        cli.change(args.name, force=args.force)
+    elif args.command == 'start-gui':
+        mode = "emergency" if getattr(args, 'emergency', False) else "normal"
+        cli.start_gui(mode=mode)
+    elif args.command == 'status':
+        cli.status()
+    elif args.command == 'unlock':
+        cli.emergency()
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()

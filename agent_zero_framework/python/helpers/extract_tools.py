@@ -1,8 +1,12 @@
-import re, os, importlib, importlib.util, inspect
+import re
+import os
+import importlib
+import importlib.util
+import inspect
 from types import ModuleType
 from typing import Any, Type, TypeVar
 from .dirty_json import DirtyJson
-from .files import get_abs_path, deabsolute_path
+from .files import get_abs_path
 import regex
 from fnmatch import fnmatch
 

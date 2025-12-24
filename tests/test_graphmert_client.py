@@ -4,7 +4,6 @@ Unit tests for GraphMERTClient
 Tests the neurosymbolic truth filter that extracts fact triples from user input.
 """
 import pytest
-import asyncio
 from uatu_genesis_engine.utils.graphmert_client import (
     GraphMERTClient,
     FactTriple,
