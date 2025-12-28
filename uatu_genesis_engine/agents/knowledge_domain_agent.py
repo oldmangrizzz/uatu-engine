@@ -103,9 +103,6 @@ class KnowledgeDomainAgent(BaseAgent):
         
         logger.info(f"Mapped {len(results['knowledge_domains'])} knowledge domains for {character_name}")
         return results
-        
-        logger.info(f"Mapped {len(results['knowledge_domains'])} knowledge domains for {character_name}")
-        return results
     
     def _extract_knowledge_domains(self, html: str, character_name: str, occupations: List[str]) -> List[Dict[str, Any]]:
         """Extract knowledge domains from HTML content."""

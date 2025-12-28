@@ -11,7 +11,7 @@ except Exception:
     from typing import Any as Request  # type: ignore
 from python.helpers.api import ApiHandler
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 
@@ -62,7 +62,7 @@ class PersonaCustomization(ApiHandler):
             if persona_root:
                 dbg_in = persona_root / "persona_customize_incoming.jsonl"
                 with open(dbg_in, "a", encoding="utf-8") as f:
-                    f.write(json.dumps({"ts": datetime.utcnow().isoformat(), "input": input, "fields_being_edited": fields_being_edited}) + "\n")
+                    f.write(json.dumps({"ts": datetime.now(timezone.utc).isoformat(), "input": input, "fields_being_edited": fields_being_edited}) + "\n")
         except Exception:
             logger.exception("Failed to write incoming debug record")
 
@@ -72,7 +72,7 @@ class PersonaCustomization(ApiHandler):
                 if persona_root:
                     dbg = persona_root / name
                     with open(dbg, "a", encoding="utf-8") as f:
-                        f.write(json.dumps({"ts": datetime.utcnow().isoformat(), **data}) + "\n")
+                        f.write(json.dumps({"ts": datetime.now(timezone.utc).isoformat(), **data}) + "\n")
             except Exception:
                 logger.exception("Failed to write persona debug %s", name)
         try:
@@ -95,7 +95,7 @@ class PersonaCustomization(ApiHandler):
                             dbg_path = persona_root / "persona_customize_debug.jsonl"
                             with open(dbg_path, "a", encoding="utf-8") as dbg:
                                 dbg.write(json.dumps({
-                                    "ts": datetime.utcnow().isoformat(),
+                                    "ts": datetime.now(timezone.utc).isoformat(),
                                     "fields_being_edited": fields_being_edited,
                                     "override_payload_present": bool(override_payload_json),
                                     "override_signature_present": bool(override_signature),
