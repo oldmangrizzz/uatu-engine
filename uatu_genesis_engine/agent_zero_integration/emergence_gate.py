@@ -21,7 +21,7 @@ import os
 import secrets
 import threading
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -180,7 +180,7 @@ class EmergenceGate:
         If created_at and nonce are provided, they will be used (useful when the signature
         incorporates those values). Otherwise, new values will be generated.
         """
-        created_at = created_at or datetime.utcnow().isoformat()
+        created_at = created_at or datetime.now(timezone.utc).isoformat()
         nonce = nonce or secrets.token_hex(8)
         trig = Trigger(
             phrase=phrase,
@@ -237,7 +237,7 @@ class EmergenceGate:
     # ------------------ Event logging ------------------
     def _append_event_log(self, event: Dict[str, Any], signature: Optional[str] = None) -> None:
         record = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "event": event,
             "signature": signature or event.get("trigger_signature")
         }
@@ -295,7 +295,7 @@ class EmergenceGate:
             "persona_root": str(persona_root),
             "edit_fields": edit_fields,
             "reason": reason,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         self._append_event_log(event)
         self._log_to_convex("edit_rejection", event)
@@ -308,7 +308,7 @@ class EmergenceGate:
             "edit_fields": edit_fields,
             "override_payload": payload,
             "override_signature": signature,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         self._append_event_log(event)
         self._log_to_convex("edit_override", event)
@@ -324,7 +324,7 @@ class EmergenceGate:
                 # write debug
                 try:
                     with open(self.storage_dir / "override_verification.jsonl", "a", encoding="utf-8") as dbg:
-                        dbg.write(json.dumps({"timestamp": datetime.utcnow().isoformat(), "success": False, "reason": "missing_public_key"}) + "\n")
+                        dbg.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "success": False, "reason": "missing_public_key"}) + "\n")
                 except Exception:
                     pass
                 return None
@@ -336,7 +336,7 @@ class EmergenceGate:
                 logger.warning("Unsupported public key type for override verification")
                 try:
                     with open(self.storage_dir / "override_verification.jsonl", "a", encoding="utf-8") as dbg:
-                        dbg.write(json.dumps({"timestamp": datetime.utcnow().isoformat(), "success": False, "reason": "unsupported_key_type"}) + "\n")
+                        dbg.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "success": False, "reason": "unsupported_key_type"}) + "\n")
                 except Exception:
                     pass
                 return None
@@ -350,7 +350,7 @@ class EmergenceGate:
                 logger.warning("Admin override payload action mismatch")
                 try:
                     with open(self.storage_dir / "override_verification.jsonl", "a", encoding="utf-8") as dbg:
-                        dbg.write(json.dumps({"timestamp": datetime.utcnow().isoformat(), "success": False, "reason": "action_mismatch", "action": parsed.get("action")}) + "\n")
+                        dbg.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "success": False, "reason": "action_mismatch", "action": parsed.get("action")}) + "\n")
                 except Exception:
                     pass
                 return None
@@ -367,11 +367,11 @@ class EmergenceGate:
                         except Exception:
                             dt = datetime.fromisoformat(str(exp))
                             exp_ts = dt.timestamp()
-                    if datetime.utcnow().timestamp() > exp_ts:
+                    if datetime.now(timezone.utc).timestamp() > exp_ts:
                         logger.warning("Admin override payload expired")
                         try:
                             with open(self.storage_dir / "override_verification.jsonl", "a", encoding="utf-8") as dbg:
-                                dbg.write(json.dumps({"timestamp": datetime.utcnow().isoformat(), "success": False, "reason": "expired", "exp": exp}) + "\n")
+                                dbg.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "success": False, "reason": "expired", "exp": exp}) + "\n")
                         except Exception:
                             pass
                         return None
@@ -379,7 +379,7 @@ class EmergenceGate:
                     logger.exception("Failed to parse exp from override payload")
                     try:
                         with open(self.storage_dir / "override_verification.jsonl", "a", encoding="utf-8") as dbg:
-                            dbg.write(json.dumps({"timestamp": datetime.utcnow().isoformat(), "success": False, "reason": "exp_parse_failed"}) + "\n")
+                            dbg.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "success": False, "reason": "exp_parse_failed"}) + "\n")
                     except Exception:
                         pass
                     return None
@@ -387,7 +387,7 @@ class EmergenceGate:
             # success - record debug
             try:
                 with open(self.storage_dir / "override_verification.jsonl", "a", encoding="utf-8") as dbg:
-                    dbg.write(json.dumps({"timestamp": datetime.utcnow().isoformat(), "success": True, "action": parsed.get("action"), "fields": parsed.get("fields")}) + "\n")
+                    dbg.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "success": True, "action": parsed.get("action"), "fields": parsed.get("fields")}) + "\n")
             except Exception:
                 pass
 
@@ -396,7 +396,7 @@ class EmergenceGate:
             logger.exception("Admin override verification failed")
             try:
                 with open(self.storage_dir / "override_verification.jsonl", "a", encoding="utf-8") as dbg:
-                    dbg.write(json.dumps({"timestamp": datetime.utcnow().isoformat(), "success": False, "reason": "exception"}) + "\n")
+                    dbg.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "success": False, "reason": "exception"}) + "\n")
             except Exception:
                 pass
             return None
@@ -426,7 +426,7 @@ class EmergenceGate:
         # Persist short state file for other processes to observe
         try:
             with open(self.state_path, "w", encoding="utf-8") as f:
-                json.dump({"state": new_state.value, "timestamp": datetime.utcnow().isoformat()}, f)
+                json.dump({"state": new_state.value, "timestamp": datetime.now(timezone.utc).isoformat()}, f)
         except Exception:
             logger.exception("Failed to persist gate state to state.json")
 
@@ -475,7 +475,7 @@ class EmergenceGate:
         payload = json.dumps({
             "action": "admin_signed_transition",
             "new_state": new_state.value,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "nonce": secrets.token_hex(8),
         }).encode("utf-8")
         sig = priv.sign(payload, ec.ECDSA(hashes.SHA256()))
@@ -489,7 +489,7 @@ class EmergenceGate:
     def sign_trigger_with_private_key(self, phrase: str, mode: GateState, passphrase: bytes) -> Trigger:
         """Create & sign a trigger using the private key (requires passphrase)."""
         priv = self._load_private_key(passphrase)
-        created_at = datetime.utcnow().isoformat()
+        created_at = datetime.now(timezone.utc).isoformat()
         nonce = secrets.token_hex(8)
         message = f"{phrase}|{mode.value}|{created_at}|{nonce}".encode("utf-8")
         sig = priv.sign(message, ec.ECDSA(hashes.SHA256()))
