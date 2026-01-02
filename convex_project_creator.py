@@ -14,9 +14,11 @@ This ensures each persona has:
 3. Persistent identity invariants
 4. Emergency backup capability
 """
+
 import os
 import sys
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Dict, Any, Optional
@@ -64,6 +66,7 @@ export const mutation = {{
     }}
   }})
 }};
+"""
 
 
 CONVEX_SCHEMA_DEPLOYMENT = """[
@@ -184,7 +187,7 @@ class ConvexProjectCreator:
         self,
         persona_name: str,
         persona_name_safe: str,
-        soul_anchor_data: Optional[Dict[str, Any]] = None
+        soul_anchor_data: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Create a complete Convex project for a digital person.
@@ -209,18 +212,20 @@ class ConvexProjectCreator:
             project_name=persona_name_safe,
             persona_name=persona_name,
             project_name_safe=persona_name_safe,
-            created_at=datetime.now().isoformat()
+            created_at=datetime.now().isoformat(),
         )
 
-        with open(ts_project, 'w', encoding='utf-8') as f:
+        with open(ts_project, "w", encoding="utf-8") as f:
             f.write(ts_content)
 
         print(f"   ✓ Created: convex_project.ts")
 
         # Write Convex schema
         schema_file = project_dir / "convex_schema.ts"
-        with open(schema_file, 'w', encoding='utf-8') as f:
-            f.write(CONVEX_SCHEMA_DEPLOYMENT.format(project_name=persona_name_safe))
+        with open(schema_file, "w", encoding="utf-8") as f:
+            f.write(
+                CONVEX_SCHEMA_DEPLOYMENT.format(project_name_safe=persona_name_safe)
+            )
 
         print(f"   ✓ Created: convex_schema.ts")
 
@@ -229,17 +234,11 @@ class ConvexProjectCreator:
             "name": f"{persona_name_safe}-convex",
             "version": "1.0.0",
             "description": f"Digital person memory backend for {persona_name}",
-            "scripts": {
-                "dev": "convex dev",
-                "deploy": "npx convex deploy"
-            },
-            "dependencies": {
-                "convex": "^0.17.0",
-                "convex-cli": "^0.17.0"
-            }
+            "scripts": {"dev": "convex dev", "deploy": "npx convex deploy"},
+            "dependencies": {"convex": "^0.17.0", "convex-cli": "^0.17.0"},
         }
 
-        with open(project_dir / "package.json", 'w', encoding='utf-8') as f:
+        with open(project_dir / "package.json", "w", encoding="utf-8") as f:
             json.dump(package_json, f, indent=2)
 
         print(f"   ✓ Created: package.json")
@@ -247,7 +246,7 @@ class ConvexProjectCreator:
         # Copy soul anchor if provided
         if soul_anchor_data:
             anchor_file = project_dir / "soul_anchor.json"
-            with open(anchor_file, 'w', encoding='utf-8') as f:
+            with open(anchor_file, "w", encoding="utf-8") as f:
                 json.dump(soul_anchor_data, f, indent=2)
             print(f"   ✓ Created: soul_anchor.json")
 
@@ -297,7 +296,7 @@ Created by Uatu Engine
 GrizzlyMedicine R&D - The World's First True Metaverse Research Lab
 """
 
-        with open(project_dir / "README.md", 'w', encoding='utf-8') as f:
+        with open(project_dir / "README.md", "w", encoding="utf-8") as f:
             f.write(readme_content)
 
         print(f"   ✓ Created: README.md")
@@ -307,8 +306,213 @@ GrizzlyMedicine R&D - The World's First True Metaverse Research Lab
             "project_dir": str(project_dir),
             "project_name_safe": persona_name_safe,
             "ts_project": str(ts_project),
-            "schema_file": str(schema_file)
+            "schema_file": str(schema_file),
         }
+
+    def deploy_project(
+        self, project_dir: str, deploy_key: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Deploy Convex project and return the deployment URL.
+
+        Runs npm install + npx convex deploy in the project directory.
+        Requires CONVEX_DEPLOY_KEY environment variable for non-interactive deployment.
+
+        Args:
+            project_dir: Path to the Convex project directory
+            deploy_key: Optional Convex deploy key (falls back to CONVEX_DEPLOY_KEY env var)
+
+        Returns:
+            Dictionary with deployment results:
+            {
+                "deployed": bool,
+                "convex_url": str or None,
+                "convex_admin_key": str or None,
+                "error": str or None
+            }
+        """
+        project_path = Path(project_dir)
+        if not project_path.exists():
+            return {
+                "deployed": False,
+                "convex_url": None,
+                "convex_admin_key": None,
+                "error": f"Project directory not found: {project_dir}",
+            }
+
+        # Get deploy key from argument or environment
+        convex_deploy_key = deploy_key or os.environ.get("CONVEX_DEPLOY_KEY")
+
+        print(f"🚀 Deploying Convex project: {project_path.name}")
+
+        # Step 1: npm install
+        print("   📦 Installing dependencies (npm install)...")
+        try:
+            npm_result = subprocess.run(
+                ["npm", "install"],
+                cwd=str(project_path),
+                capture_output=True,
+                text=True,
+                timeout=120,  # 2 minute timeout for npm install
+            )
+
+            if npm_result.returncode != 0:
+                print(f"   ❌ npm install failed: {npm_result.stderr}")
+                return {
+                    "deployed": False,
+                    "convex_url": None,
+                    "convex_admin_key": None,
+                    "error": f"npm install failed: {npm_result.stderr}",
+                }
+
+            print("   ✓ Dependencies installed")
+
+        except subprocess.TimeoutExpired:
+            return {
+                "deployed": False,
+                "convex_url": None,
+                "convex_admin_key": None,
+                "error": "npm install timed out after 120 seconds",
+            }
+        except FileNotFoundError:
+            return {
+                "deployed": False,
+                "convex_url": None,
+                "convex_admin_key": None,
+                "error": "npm not found. Please install Node.js/npm.",
+            }
+
+        # Step 2: npx convex deploy
+        print("   🌐 Deploying to Convex cloud...")
+
+        # Build deploy command
+        deploy_cmd = ["npx", "convex", "deploy", "--cmd", "echo"]
+
+        # Set up environment with deploy key if available
+        deploy_env = os.environ.copy()
+        if convex_deploy_key:
+            deploy_env["CONVEX_DEPLOY_KEY"] = convex_deploy_key
+
+        try:
+            deploy_result = subprocess.run(
+                deploy_cmd,
+                cwd=str(project_path),
+                capture_output=True,
+                text=True,
+                timeout=180,  # 3 minute timeout for deployment
+                env=deploy_env,
+            )
+
+            # Parse output for URL
+            output = deploy_result.stdout + deploy_result.stderr
+            convex_url = None
+            convex_admin_key = None
+
+            # Look for the deployment URL in output
+            # Convex typically outputs something like:
+            # "Deployed to https://xxx-xxx-xxx.convex.cloud"
+            # or "Convex URL: https://xxx.convex.cloud"
+            for line in output.split("\n"):
+                line_lower = line.lower()
+                if "convex.cloud" in line_lower or "convex.site" in line_lower:
+                    # Extract URL from line
+                    url_match = re.search(
+                        r"https://[^\s]+\.convex\.(cloud|site)[^\s]*", line
+                    )
+                    if url_match:
+                        convex_url = url_match.group(0).rstrip(".,;:")
+                        break
+
+                # Also look for admin key if present
+                if "admin_key" in line_lower or "deploy_key" in line_lower:
+                    key_match = re.search(r"[a-zA-Z0-9_-]{32,}", line)
+                    if key_match:
+                        convex_admin_key = key_match.group(0)
+
+            if deploy_result.returncode != 0:
+                # Check if it's an auth error
+                if "auth" in output.lower() or "login" in output.lower():
+                    return {
+                        "deployed": False,
+                        "convex_url": None,
+                        "convex_admin_key": None,
+                        "error": "Convex authentication required. Set CONVEX_DEPLOY_KEY or run 'npx convex login' first.",
+                        "output": output,
+                    }
+                return {
+                    "deployed": False,
+                    "convex_url": convex_url,  # May have captured URL even if deploy failed
+                    "convex_admin_key": convex_admin_key,
+                    "error": f"Convex deploy failed: {deploy_result.stderr}",
+                    "output": output,
+                }
+
+            if convex_url:
+                print(f"   ✓ Deployed to: {convex_url}")
+            else:
+                # Even if no URL found, deployment may have succeeded
+                print("   ⚠ Deployed but URL not captured from output")
+                print(f"   Output: {output[:500]}")
+
+            return {
+                "deployed": True,
+                "convex_url": convex_url,
+                "convex_admin_key": convex_admin_key,
+                "error": None,
+                "output": output,
+            }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "deployed": False,
+                "convex_url": None,
+                "convex_admin_key": None,
+                "error": "Convex deploy timed out after 180 seconds",
+            }
+        except FileNotFoundError:
+            return {
+                "deployed": False,
+                "convex_url": None,
+                "convex_admin_key": None,
+                "error": "npx not found. Please install Node.js/npm.",
+            }
+
+    def create_and_deploy(
+        self,
+        persona_name: str,
+        persona_name_safe: str,
+        soul_anchor_data: Optional[Dict[str, Any]] = None,
+        deploy_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Create AND deploy a Convex project in one operation.
+
+        This is the primary method for genesis sequence integration.
+        Creates the project files, runs npm install, and deploys to Convex cloud.
+
+        Args:
+            persona_name: Display name (e.g., "Tony Stark")
+            persona_name_safe: Safe identifier (e.g., "tony_stark")
+            soul_anchor_data: Optional soul anchor data to include
+            deploy_key: Optional Convex deploy key
+
+        Returns:
+            Dictionary with combined creation and deployment results
+        """
+        # Step 1: Create the project
+        create_result = self.create_project(
+            persona_name=persona_name,
+            persona_name_safe=persona_name_safe,
+            soul_anchor_data=soul_anchor_data,
+        )
+
+        # Step 2: Deploy it
+        deploy_result = self.deploy_project(
+            project_dir=create_result["project_dir"], deploy_key=deploy_key
+        )
+
+        # Combine results
+        return {**create_result, **deploy_result}
 
 
 def main():
@@ -317,12 +521,14 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="Create individual Convex projects for digital persons",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument('persona_name', help='Persona name (e.g., "Tony Stark")')
-    parser.add_argument('--persona-file', help='Path to soul anchor YAML file')
-    parser.add_argument('--from-lock', action='store_true', help='Use currently locked persona')
+    parser.add_argument("persona_name", help='Persona name (e.g., "Tony Stark")')
+    parser.add_argument("--persona-file", help="Path to soul anchor YAML file")
+    parser.add_argument(
+        "--from-lock", action="store_true", help="Use currently locked persona"
+    )
 
     args = parser.parse_args()
 
@@ -331,23 +537,29 @@ def main():
     if args.from_lock:
         lock_file = Path.home() / ".uatu" / "persona.lock"
         if lock_file.exists():
-            with open(lock_file, 'r', encoding='utf-8') as f:
+            with open(lock_file, "r", encoding="utf-8") as f:
                 lock_data = json.load(f)
             persona_name = lock_data.get("persona", "Unknown")
 
             # Load soul anchor
-            persona_dir = Path.cwd() / "agent_zero_framework" / "personas" / persona_name.lower().replace(" ", "_")
+            persona_dir = (
+                Path.cwd()
+                / "agent_zero_framework"
+                / "personas"
+                / persona_name.lower().replace(" ", "_")
+            )
             soul_anchor_file = persona_dir / "persona_config.yaml"
 
             if soul_anchor_file.exists():
                 import yaml
-                with open(soul_anchor_file, 'r', encoding='utf-8') as f:
+
+                with open(soul_anchor_file, "r", encoding="utf-8") as f:
                     soul_anchor = yaml.safe_load(f)
 
                 result = creator.create_project(
                     persona_name=persona_name,
                     persona_name_safe=persona_name.lower().replace(" ", "_"),
-                    soul_anchor_data=soul_anchor
+                    soul_anchor_data=soul_anchor,
                 )
                 print()
                 print(f"📋 Project location: {result['project_dir']}")
@@ -371,13 +583,14 @@ def main():
         soul_anchor_data = None
         if args.persona_file:
             import yaml
-            with open(args.persona_file, 'r', encoding='utf-8') as f:
+
+            with open(args.persona_file, "r", encoding="utf-8") as f:
                 soul_anchor_data = yaml.safe_load(f)
 
         result = creator.create_project(
             persona_name=persona_name,
             persona_name_safe=persona_name_safe,
-            soul_anchor_data=soul_anchor_data
+            soul_anchor_data=soul_anchor_data,
         )
 
         print()

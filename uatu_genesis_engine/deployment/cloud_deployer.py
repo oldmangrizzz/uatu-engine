@@ -8,38 +8,57 @@ This module performs actual cloud deployments, not simulations.
 Converting local AI persona generators into cloud-deployment engines.
 This code executes real uploads to Hugging Face Spaces.
 """
+
 import tempfile
+import os
+import subprocess
+import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 from huggingface_hub import HfApi
 from huggingface_hub.errors import HfHubHTTPError
+
+# Import Convex project creator for auto-deployment
+try:
+    import sys
+
+    # Add parent directory to path for importing convex_project_creator
+    _repo_root = Path(__file__).parent.parent.parent
+    if str(_repo_root) not in sys.path:
+        sys.path.insert(0, str(_repo_root))
+    from convex_project_creator import ConvexProjectCreator
+
+    CONVEX_AVAILABLE = True
+except ImportError:
+    CONVEX_AVAILABLE = False
 
 
 class AuthenticationError(Exception):
     """Raised when Hugging Face authentication fails."""
+
     pass
 
 
 class CloudDeployer:
     """
     Cloud deployment engine for AI personas.
-    
+
     Deploys AI personas to Hugging Face Spaces as containerized applications.
     """
-    
+
     def __init__(self, hf_token: str):
         """
         Initialize CloudDeployer with Hugging Face authentication.
-        
+
         Args:
             hf_token: Hugging Face API token
-            
+
         Raises:
             AuthenticationError: If token is invalid
         """
         self.api = HfApi(token=hf_token)
         self.hf_token = hf_token
-        
+
         # Validate token immediately
         try:
             self.user_info = self.api.whoami()
@@ -47,14 +66,14 @@ class CloudDeployer:
             raise AuthenticationError(f"Invalid Hugging Face token: {e}")
         except Exception as e:
             raise AuthenticationError(f"Authentication failed: {e}")
-    
+
     def _check_or_create_space(self, space_name: str) -> str:
         """
         Check if Space exists, create if it doesn't.
-        
+
         Args:
             space_name: Full space name (e.g., 'username/space-name')
-            
+
         Returns:
             Space ID (repo_id)
         """
@@ -70,27 +89,29 @@ class CloudDeployer:
                     repo_id=space_name,
                     repo_type="space",
                     space_sdk="docker",
-                    exist_ok=True
+                    exist_ok=True,
                 )
                 return space_name
             else:
                 # Other HTTP errors should be re-raised
                 raise
-    
-    def _generate_launch_script(self, persona_path: str, original_launch_script: str) -> str:
+
+    def _generate_launch_script(
+        self, persona_path: str, original_launch_script: str
+    ) -> str:
         """
         Generate enhanced launch script with Genesis integration.
-        
+
         This script handles:
         - Secure credential vault (local .env with auto-gitignore)
         - Avatar generation via Flux (first boot only)
         - Construct narrative loading
         - System context injection
-        
+
         Args:
             persona_path: Relative path to persona directory
             original_launch_script: Name of the original launch script
-            
+
         Returns:
             Launch script content as string
         """
@@ -161,7 +182,20 @@ def secure_boot_sequence():
                     os.environ[key] = value
                     count += 1
             
-            print(f">> {{count}} KEYS INJECTED SUCCESSFULLY.")
+            print(f">> {{count}} KEYS INJECTED FROM .env")
+            
+            # Also load .env.convex if it exists (auto-generated during genesis)
+            convex_vault_path = repo_root / ".env.convex"
+            if convex_vault_path.exists():
+                print(">> DETECTED CONVEX VAULT (.env.convex)")
+                convex_vars = dotenv_values(convex_vault_path)
+                convex_count = 0
+                for key, value in convex_vars.items():
+                    if key in allowed_keys and value:
+                        os.environ[key] = value
+                        convex_count += 1
+                print(f">> {{convex_count}} CONVEX KEYS INJECTED")
+            
             time.sleep(1)
             return
         except ImportError:
@@ -183,7 +217,27 @@ def secure_boot_sequence():
                             os.environ[key] = value
                             count += 1
             
-            print(f">> {{count}} KEYS INJECTED SUCCESSFULLY.")
+            print(f">> {{count}} KEYS INJECTED FROM .env")
+            
+            # Also load .env.convex if it exists (fallback parsing)
+            convex_vault_path = repo_root / ".env.convex"
+            if convex_vault_path.exists():
+                print(">> DETECTED CONVEX VAULT (.env.convex)")
+                convex_count = 0
+                with open(convex_vault_path, "r", encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith("#"):
+                            continue
+                        if "=" in line:
+                            key, value = line.split("=", 1)
+                            key = key.strip()
+                            value = value.strip().strip('"').strip("'")
+                            if key and key.replace('_', '').isalnum():
+                                os.environ[key] = value
+                                convex_count += 1
+                print(f">> {{convex_count}} CONVEX KEYS INJECTED")
+            
             time.sleep(1)
             return
 
@@ -374,15 +428,15 @@ except Exception as e:
     sys.exit(1)
 """
         return launch_script
-    
+
     def _generate_dockerfile(self, persona_path: str, launch_script: str) -> str:
         """
         Generate Dockerfile for persona deployment.
-        
+
         Args:
             persona_path: Relative path to persona directory (e.g., 'personas/lucius_fox')
             launch_script: Name of the launch script (e.g., 'launch_lucius_fox.py')
-            
+
         Returns:
             Dockerfile content as string
         """
@@ -428,31 +482,281 @@ ENV GRADIO_SERVER_PORT=7860
 CMD ["python", "/app/{persona_path}/genesis_launch.py"]
 """
         return dockerfile
-    
+
+    def _create_convex_project(
+        self,
+        persona_name: str,
+        persona_name_safe: str,
+        soul_anchor_data: Optional[Dict[str, Any]] = None,
+        deploy_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Create and deploy a Convex project for this digital person.
+
+        Each digital person gets their OWN Convex project - no Borg collective.
+        This ensures complete memory isolation.
+
+        Args:
+            persona_name: Display name (e.g., "Tony Stark")
+            persona_name_safe: Safe identifier (e.g., "tony_stark")
+            soul_anchor_data: Optional soul anchor data to seed
+            deploy_key: Optional Convex deploy key
+
+        Returns:
+            Dictionary with Convex deployment results including URL
+        """
+        if not CONVEX_AVAILABLE:
+            return {
+                "deployed": False,
+                "convex_url": None,
+                "error": "ConvexProjectCreator not available. Run 'pip install -e .' from repo root.",
+            }
+
+        try:
+            creator = ConvexProjectCreator()
+            result = creator.create_and_deploy(
+                persona_name=persona_name,
+                persona_name_safe=persona_name_safe,
+                soul_anchor_data=soul_anchor_data,
+                deploy_key=deploy_key or os.environ.get("CONVEX_DEPLOY_KEY"),
+            )
+            return result
+        except Exception as e:
+            return {
+                "deployed": False,
+                "convex_url": None,
+                "error": f"Convex deployment failed: {e}",
+            }
+
+    def _generate_tunnel_subdomain(self, primary_name: str) -> str:
+        """
+        Generate cloudflared tunnel subdomain from primary name.
+
+        Format: firstmiddlelast.grizzlymedicine.icu
+        Example: "Anthony Edward Stark" -> "aestark.grizzlymedicine.icu"
+
+        Args:
+            primary_name: Full name (e.g., "Anthony Edward Stark")
+
+        Returns:
+            Subdomain string (e.g., "aestark")
+        """
+        # Split name into parts
+        parts = primary_name.strip().split()
+
+        if len(parts) >= 3:
+            # First initial + middle initial + full last name
+            # "Anthony Edward Stark" -> "aestark"
+            first_initial = parts[0][0].lower()
+            middle_initial = parts[1][0].lower()
+            last_name = parts[-1].lower()
+            subdomain = f"{first_initial}{middle_initial}{last_name}"
+        elif len(parts) == 2:
+            # First initial + full last name
+            # "Lucius Fox" -> "lfox"
+            first_initial = parts[0][0].lower()
+            last_name = parts[-1].lower()
+            subdomain = f"{first_initial}{last_name}"
+        else:
+            # Just use the whole name lowercased
+            subdomain = parts[0].lower() if parts else "unknown"
+
+        # Remove any non-alphanumeric characters
+        subdomain = re.sub(r"[^a-z0-9]", "", subdomain)
+
+        return subdomain
+
+    def create_cloudflared_tunnel(
+        self,
+        primary_name: str,
+        local_port: int = 7860,
+        domain: str = "grizzlymedicine.icu",
+    ) -> Dict[str, Any]:
+        """
+        Create a cloudflared tunnel for a digital person.
+
+        Each digital person gets their own persistent subdomain:
+        - Anthony Edward Stark -> aestark.grizzlymedicine.icu
+        - Lucius Fox -> lfox.grizzlymedicine.icu
+
+        This allows remote access to locally-running personas without
+        exposing raw IPs or requiring VPNs.
+
+        Args:
+            primary_name: Full name of the digital person
+            local_port: Local port the persona is running on (default 7860)
+            domain: Base domain (default grizzlymedicine.icu)
+
+        Returns:
+            Dictionary with tunnel info:
+            - subdomain: The generated subdomain
+            - full_url: Complete URL (https://subdomain.domain)
+            - tunnel_id: cloudflared tunnel ID (if created)
+            - status: "created", "exists", or "error"
+            - error: Error message if failed
+        """
+        subdomain = self._generate_tunnel_subdomain(primary_name)
+        full_hostname = f"{subdomain}.{domain}"
+        full_url = f"https://{full_hostname}"
+
+        result = {
+            "subdomain": subdomain,
+            "full_url": full_url,
+            "tunnel_id": None,
+            "status": "pending",
+            "error": None,
+        }
+
+        # Check if cloudflared is installed
+        try:
+            version_check = subprocess.run(
+                ["cloudflared", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if version_check.returncode != 0:
+                result["status"] = "error"
+                result["error"] = "cloudflared not installed or not in PATH"
+                return result
+        except FileNotFoundError:
+            result["status"] = "error"
+            result["error"] = (
+                "cloudflared not installed. Install: brew install cloudflared"
+            )
+            return result
+        except subprocess.TimeoutExpired:
+            result["status"] = "error"
+            result["error"] = "cloudflared version check timed out"
+            return result
+
+        # Create the tunnel
+        # Note: This requires cloudflared to be authenticated already
+        # Run: cloudflared tunnel login
+        try:
+            # Create named tunnel
+            tunnel_name = f"uatu-{subdomain}"
+            create_result = subprocess.run(
+                ["cloudflared", "tunnel", "create", tunnel_name],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+
+            if create_result.returncode == 0:
+                # Extract tunnel ID from output
+                output = create_result.stdout
+                # Look for UUID pattern in output
+                uuid_match = re.search(
+                    r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+                    output,
+                )
+                if uuid_match:
+                    result["tunnel_id"] = uuid_match.group(1)
+                result["status"] = "created"
+            elif "already exists" in create_result.stderr.lower():
+                result["status"] = "exists"
+                # Try to get existing tunnel ID
+                list_result = subprocess.run(
+                    ["cloudflared", "tunnel", "list", "-o", "json"],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                if list_result.returncode == 0:
+                    import json
+
+                    try:
+                        tunnels = json.loads(list_result.stdout)
+                        for tunnel in tunnels:
+                            if tunnel.get("name") == tunnel_name:
+                                result["tunnel_id"] = tunnel.get("id")
+                                break
+                    except json.JSONDecodeError:
+                        pass
+            else:
+                result["status"] = "error"
+                result["error"] = (
+                    create_result.stderr or "Unknown tunnel creation error"
+                )
+                return result
+
+        except subprocess.TimeoutExpired:
+            result["status"] = "error"
+            result["error"] = "Tunnel creation timed out"
+            return result
+        except Exception as e:
+            result["status"] = "error"
+            result["error"] = f"Tunnel creation failed: {e}"
+            return result
+
+        # Route DNS to tunnel
+        if result["tunnel_id"]:
+            try:
+                dns_result = subprocess.run(
+                    [
+                        "cloudflared",
+                        "tunnel",
+                        "route",
+                        "dns",
+                        result["tunnel_id"],
+                        full_hostname,
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                if (
+                    dns_result.returncode != 0
+                    and "already exists" not in dns_result.stderr.lower()
+                ):
+                    # DNS routing failed but tunnel was created
+                    result["error"] = f"DNS routing warning: {dns_result.stderr}"
+            except Exception as e:
+                result["error"] = f"DNS routing warning: {e}"
+
+        # Generate tunnel config file for this persona
+        config_content = f"""# Cloudflared config for {primary_name}
+# Generated by Uatu Genesis Engine
+# Run with: cloudflared tunnel run {tunnel_name}
+
+tunnel: {result["tunnel_id"] or tunnel_name}
+credentials-file: ~/.cloudflared/{result["tunnel_id"] or tunnel_name}.json
+
+ingress:
+  - hostname: {full_hostname}
+    service: http://localhost:{local_port}
+  - service: http_status:404
+"""
+        result["config"] = config_content
+        result["run_command"] = f"cloudflared tunnel run {tunnel_name}"
+
+        return result
+
     def deploy_persona(
-        self, 
-        persona_path: str, 
-        token: Optional[str] = None, 
-        target_space_name: Optional[str] = None
+        self,
+        persona_path: str,
+        token: Optional[str] = None,
+        target_space_name: Optional[str] = None,
     ) -> str:
         """
         Deploy a persona to Hugging Face Spaces.
-        
+
         This method performs the actual deployment:
         1. Validates authentication
         2. Creates or verifies the Space
         3. Generates Dockerfile
         4. Uploads all required files
-        
+
         Args:
             persona_path: Path to persona directory (e.g., 'agent_zero_framework/personas/lucius_fox')
             token: Optional override token (uses instance token if None)
             target_space_name: Target space name (e.g., 'username/Lucius-Fox-Node')
                               If None, auto-generates from persona name
-            
+
         Returns:
             URL of the deployed Space
-            
+
         Raises:
             ValueError: If persona path doesn't exist
             AuthenticationError: If authentication fails
@@ -468,42 +772,46 @@ CMD ["python", "/app/{persona_path}/genesis_launch.py"]
         else:
             api = self.api
             user_info = self.user_info
-        
+
         # Validate persona path
         full_persona_path = Path(persona_path)
         if not full_persona_path.exists():
             raise ValueError(f"Persona path does not exist: {persona_path}")
-        
+
         # Get persona name from path
         persona_name = full_persona_path.name
-        
+
         # Generate space name if not provided
         if not target_space_name:
-            username = user_info.get('name') or user_info.get('id')
-            target_space_name = f"{username}/{persona_name.replace('_', '-').title()}-Node"
-        
+            username = user_info.get("name") or user_info.get("id")
+            target_space_name = (
+                f"{username}/{persona_name.replace('_', '-').title()}-Node"
+            )
+
         # Check or create space
         space_id = self._check_or_create_space(target_space_name)
-        
+
         # Find launch script
         launch_scripts = list(full_persona_path.glob("launch_*.py"))
         if not launch_scripts:
             raise ValueError(f"No launch script found in {persona_path}")
         launch_script = launch_scripts[0].name
-        
+
         # Generate Dockerfile
         # Use relative path for Dockerfile
         rel_persona_path = str(full_persona_path)
         dockerfile_content = self._generate_dockerfile(rel_persona_path, launch_script)
-        
+
         # Create temporary Dockerfile using secure tempfile
         temp_dockerfile = None
         try:
             # Use tempfile for secure cross-platform temporary file
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.Dockerfile', delete=False) as tf:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".Dockerfile", delete=False
+            ) as tf:
                 tf.write(dockerfile_content)
                 temp_dockerfile = Path(tf.name)
-            
+
             # Get repo root (assumes we're running from repo root or subdirectory)
             repo_root = Path.cwd()
             if not (repo_root / "uatu_genesis_engine").exists():
@@ -512,47 +820,51 @@ CMD ["python", "/app/{persona_path}/genesis_launch.py"]
                     if (parent / "uatu_genesis_engine").exists():
                         repo_root = parent
                         break
-            
+
             # Upload Dockerfile
             api.upload_file(
                 path_or_fileobj=str(temp_dockerfile),
                 path_in_repo="Dockerfile",
                 repo_id=space_id,
-                repo_type="space"
+                repo_type="space",
             )
         finally:
             # Clean up temp file
             if temp_dockerfile and temp_dockerfile.exists():
                 temp_dockerfile.unlink()
-        
+
         # Generate and upload genesis_launch.py
-        genesis_script_content = self._generate_launch_script(rel_persona_path, launch_script)
+        genesis_script_content = self._generate_launch_script(
+            rel_persona_path, launch_script
+        )
         temp_genesis_script = None
         try:
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as tf:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".py", delete=False
+            ) as tf:
                 tf.write(genesis_script_content)
                 temp_genesis_script = Path(tf.name)
-            
+
             # Upload genesis launch script
             api.upload_file(
                 path_or_fileobj=str(temp_genesis_script),
                 path_in_repo="genesis_launch.py",
                 repo_id=space_id,
-                repo_type="space"
+                repo_type="space",
             )
         finally:
             # Clean up temp file
             if temp_genesis_script and temp_genesis_script.exists():
                 temp_genesis_script.unlink()
-        
+
         # Upload persona directory
         api.upload_folder(
             folder_path=str(full_persona_path),
             path_in_repo=rel_persona_path,
             repo_id=space_id,
-            repo_type="space"
+            repo_type="space",
         )
-        
+
         # Upload agent_zero_framework
         agent_zero_path = repo_root / "agent_zero_framework"
         if agent_zero_path.exists():
@@ -561,9 +873,17 @@ CMD ["python", "/app/{persona_path}/genesis_launch.py"]
                 path_in_repo="agent_zero_framework",
                 repo_id=space_id,
                 repo_type="space",
-                ignore_patterns=[".*", "__pycache__", "*.pyc", "logs/", "memory/", "tmp/", "usr/"]
+                ignore_patterns=[
+                    ".*",
+                    "__pycache__",
+                    "*.pyc",
+                    "logs/",
+                    "memory/",
+                    "tmp/",
+                    "usr/",
+                ],
             )
-        
+
         # Upload requirements.txt from repo root
         requirements_path = repo_root / "requirements.txt"
         if requirements_path.exists():
@@ -571,9 +891,9 @@ CMD ["python", "/app/{persona_path}/genesis_launch.py"]
                 path_or_fileobj=str(requirements_path),
                 path_in_repo="requirements.txt",
                 repo_id=space_id,
-                repo_type="space"
+                repo_type="space",
             )
-        
+
         # Upload agent_zero requirements if it exists
         agent_zero_requirements = agent_zero_path / "requirements.txt"
         if agent_zero_requirements.exists():
@@ -581,9 +901,108 @@ CMD ["python", "/app/{persona_path}/genesis_launch.py"]
                 path_or_fileobj=str(agent_zero_requirements),
                 path_in_repo="agent_zero_framework/requirements.txt",
                 repo_id=space_id,
-                repo_type="space"
+                repo_type="space",
             )
-        
+
+        # Auto-create and deploy Convex project for this digital person
+        # Each persona gets their OWN isolated Convex project (no Borg collective)
+        convex_result = None
+        if CONVEX_AVAILABLE:
+            print(f"\n🧠 Creating Convex memory backend for {persona_name}...")
+
+            # Load soul anchor data if available
+            soul_anchor_data = None
+            soul_anchor_file = full_persona_path / "persona_config.yaml"
+            if soul_anchor_file.exists():
+                try:
+                    import yaml
+
+                    with open(soul_anchor_file, "r", encoding="utf-8") as f:
+                        soul_anchor_data = yaml.safe_load(f)
+                except Exception as e:
+                    print(f"   ⚠ Could not load soul anchor: {e}")
+
+            convex_result = self._create_convex_project(
+                persona_name=persona_name.replace("_", " ").title(),
+                persona_name_safe=persona_name,
+                soul_anchor_data=soul_anchor_data,
+            )
+
+            if convex_result.get("deployed") and convex_result.get("convex_url"):
+                print(f"   ✓ Convex deployed: {convex_result['convex_url']}")
+
+                # Create and upload .env file with Convex URL
+                env_content = f"# Auto-generated by Uatu Genesis Engine\n"
+                env_content += f'CONVEX_URL="{convex_result["convex_url"]}"\n'
+                if convex_result.get("convex_admin_key"):
+                    env_content += (
+                        f'CONVEX_ADMIN_KEY="{convex_result["convex_admin_key"]}"\n'
+                    )
+
+                temp_env_file = None
+                try:
+                    with tempfile.NamedTemporaryFile(
+                        mode="w", suffix=".env", delete=False
+                    ) as tf:
+                        tf.write(env_content)
+                        temp_env_file = Path(tf.name)
+
+                    api.upload_file(
+                        path_or_fileobj=str(temp_env_file),
+                        path_in_repo=".env.convex",  # Separate file, merged by secure_boot
+                        repo_id=space_id,
+                        repo_type="space",
+                    )
+                    print("   ✓ Convex credentials uploaded to Space")
+                finally:
+                    if temp_env_file and temp_env_file.exists():
+                        temp_env_file.unlink()
+            else:
+                error = convex_result.get("error", "Unknown error")
+                print(f"   ⚠ Convex auto-deploy failed: {error}")
+                print("   → You can manually create a Convex project later")
+        else:
+            print(
+                "\n⚠ Convex auto-deploy not available (ConvexProjectCreator not found)"
+            )
+            print("   → Install with: pip install -e . from repo root")
+
+        # Auto-create cloudflared tunnel for remote access
+        # Each persona gets their own subdomain: firstmiddlelast.grizzlymedicine.icu
+        print(f"\n🌐 Creating cloudflared tunnel for {persona_name}...")
+
+        # Get primary name from soul anchor if available
+        primary_name_for_tunnel = persona_name.replace("_", " ").title()
+        if soul_anchor_data and soul_anchor_data.get("primary_name"):
+            primary_name_for_tunnel = soul_anchor_data["primary_name"]
+
+        tunnel_result = self.create_cloudflared_tunnel(
+            primary_name=primary_name_for_tunnel,
+            local_port=7860,
+            domain="grizzlymedicine.icu",
+        )
+
+        if tunnel_result["status"] in ["created", "exists"]:
+            print(f"   ✓ Tunnel ready: {tunnel_result['full_url']}")
+            print(
+                f"   → Run locally with: {tunnel_result.get('run_command', 'cloudflared tunnel run')}"
+            )
+
+            # Save tunnel config to persona directory
+            tunnel_config_path = full_persona_path / "cloudflared.yml"
+            if tunnel_result.get("config"):
+                try:
+                    with open(tunnel_config_path, "w", encoding="utf-8") as f:
+                        f.write(tunnel_result["config"])
+                    print(f"   ✓ Tunnel config saved to {tunnel_config_path}")
+                except Exception as e:
+                    print(f"   ⚠ Could not save tunnel config: {e}")
+        else:
+            print(
+                f"   ⚠ Tunnel setup skipped: {tunnel_result.get('error', 'Unknown error')}"
+            )
+            print("   → You can manually create a tunnel later with cloudflared")
+
         # Return Space URL
         space_url = f"https://huggingface.co/spaces/{space_id}"
         return space_url

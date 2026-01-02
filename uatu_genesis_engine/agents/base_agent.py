@@ -1,6 +1,7 @@
 """
-Base agent class for the swarm framework.
+Base agent class for swarm framework.
 """
+
 import asyncio
 import logging
 from abc import ABC, abstractmethod
@@ -13,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 class BaseAgent(ABC):
     """Base class for all swarm agents."""
-    
+
     def __init__(self, agent_id: str):
         self.agent_id = agent_id
         self.session: Optional[aiohttp.ClientSession] = None
-    
+
     async def __aenter__(self):
         """Async context manager entry."""
         self.session = aiohttp.ClientSession(
@@ -32,30 +33,32 @@ class BaseAgent(ABC):
             },
         )
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
         if self.session:
             await self.session.close()
-    
+
     @abstractmethod
-    async def execute(self, character_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute the agent's task."""
+    async def execute(
+        self, character_name: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Execute agent's task."""
         pass
-    
+
     async def fetch_url(self, url: str) -> str:
-        """Fetch content from a URL with simple exponential backoff."""
+        """Fetch content from URL with exponential backoff."""
         max_attempts = 3
         backoff_base = 1.0
 
         for attempt in range(1, max_attempts + 1):
             try:
                 if not self.session:
-                    # Should not happen, but handle gracefully
-                    await asyncio.sleep(0.1)
-                    continue
-                # Tell type checkers that session is not None
-                assert self.session is not None
+                    logger.error(
+                        f"{self.agent_id}: session not available, cannot fetch {url}"
+                    )
+                    return ""
+
                 async with self.session.get(url) as response:
                     if response.status == 200:
                         return await response.text()
@@ -72,6 +75,33 @@ class BaseAgent(ABC):
 
                     logger.warning(f"Failed to fetch {url}: status {response.status}")
                     return ""
+
+            except asyncio.TimeoutError:
+                if attempt < max_attempts:
+                    delay = backoff_base * (2 ** (attempt - 1))
+                    logger.warning(
+                        f"{self.agent_id}: timeout fetching {url}; "
+                        f"retrying in {delay:.1f}s (attempt {attempt}/{max_attempts})"
+                    )
+                    await asyncio.sleep(delay)
+                    continue
+
+                logger.error(f"{self.agent_id}: timeout error fetching {url}")
+                return ""
+
+            except aiohttp.ClientError:
+                if attempt < max_attempts:
+                    delay = backoff_base * (2 ** (attempt - 1))
+                    logger.warning(
+                        f"{self.agent_id}: client error fetching {url}; "
+                        f"retrying in {delay:.1f}s (attempt {attempt}/{max_attempts})"
+                    )
+                    await asyncio.sleep(delay)
+                    continue
+
+                logger.error(f"{self.agent_id}: client error fetching {url}")
+                return ""
+
             except Exception as e:
                 if attempt < max_attempts:
                     delay = backoff_base * (2 ** (attempt - 1))
@@ -81,11 +111,12 @@ class BaseAgent(ABC):
                     )
                     await asyncio.sleep(delay)
                     continue
+
                 logger.error(f"Error fetching {url}: {e}")
                 return ""
 
         return ""
-    
+
     def parse_html(self, html: str) -> BeautifulSoup:
         """Parse HTML content."""
-        return BeautifulSoup(html, 'html.parser')
+        return BeautifulSoup(html, "html.parser")

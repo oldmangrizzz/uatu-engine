@@ -32,5 +32,5 @@ digital_psyche_middleware:
     trigger: inactivity window
 knowledge_domains: []
 primary_name: Agent
-prompts_directory: /root/uatu-engine/agent_zero_framework/personas/agent/prompts
-tts_voice_manifest: /root/uatu-engine/agent_zero_framework/personas/agent/tts_voice_manifest.json
+prompts_directory: /Users/grizzmed/Stark/uatu-engine/agent_zero_framework/personas/agent/prompts
+tts_voice_manifest: /Users/grizzmed/Stark/uatu-engine/agent_zero_framework/personas/agent/tts_voice_manifest.json

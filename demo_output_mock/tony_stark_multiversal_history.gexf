@@ -1,0 +1,175 @@
+<?xml version='1.0' encoding='utf-8'?>
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+  <meta lastmodifieddate="2026-01-02">
+    <creator>NetworkX 3.6.1</creator>
+  </meta>
+  <graph defaultedgetype="directed" mode="static" name="">
+    <attributes mode="static" class="edge">
+      <attribute id="3" title="relationship" type="string" />
+    </attributes>
+    <attributes mode="static" class="node">
+      <attribute id="0" title="node_type" type="string" />
+      <attribute id="1" title="earth_equivalent" type="string" />
+      <attribute id="2" title="description" type="string" />
+    </attributes>
+    <nodes>
+      <node id="Tony Stark" label="Tony Stark">
+        <attvalues>
+          <attvalue for="0" value="character" />
+        </attvalues>
+      </node>
+      <node id="Tony Stark_Earth-616" label="Earth-616">
+        <attvalues>
+          <attvalue for="0" value="universe" />
+        </attvalues>
+      </node>
+      <node id="Tony Stark_Earth-199999 (MCU)" label="Earth-199999 (MCU)">
+        <attvalues>
+          <attvalue for="0" value="universe" />
+        </attvalues>
+      </node>
+      <node id="Tony Stark_Earth-1610 (Ultimate Universe)" label="Earth-1610 (Ultimate Universe)">
+        <attvalues>
+          <attvalue for="0" value="universe" />
+        </attvalues>
+      </node>
+      <node id="domain_0_DomainCategory.ENGINEERING" label="DomainCategory.ENGINEERING&#10;Expert">
+        <attvalues>
+          <attvalue for="0" value="knowledge" />
+          <attvalue for="1" value="Mechanical engineering, aerospace engineering, materials science" />
+        </attvalues>
+      </node>
+      <node id="domain_1_DomainCategory.COMPUTER_SCIENCE" label="DomainCategory.COMPUTER_SCIENCE&#10;Expert">
+        <attvalues>
+          <attvalue for="0" value="knowledge" />
+          <attvalue for="1" value="Artificial intelligence, machine learning, distributed systems" />
+        </attvalues>
+      </node>
+      <node id="domain_2_DomainCategory.BUSINESS" label="DomainCategory.BUSINESS&#10;Expert">
+        <attvalues>
+          <attvalue for="0" value="knowledge" />
+          <attvalue for="1" value="Executive leadership, corporate strategy, business management" />
+        </attvalues>
+      </node>
+      <node id="domain_3_DomainCategory.TECHNOLOGY" label="DomainCategory.TECHNOLOGY&#10;Expert">
+        <attvalues>
+          <attvalue for="0" value="knowledge" />
+          <attvalue for="1" value="Clean energy research, advanced physics, applied engineering" />
+        </attvalues>
+      </node>
+      <node id="domain_4_DomainCategory.SECURITY" label="DomainCategory.SECURITY&#10;Advanced">
+        <attvalues>
+          <attvalue for="0" value="knowledge" />
+          <attvalue for="1" value="Cybersecurity, cryptography, systems security" />
+        </attvalues>
+      </node>
+      <node id="economic_0" label="inheritance&#10;$7,000,000,000">
+        <attvalues>
+          <attvalue for="0" value="economic" />
+          <attvalue for="2" value="Inherited Stark Industries after parents' death" />
+        </attvalues>
+      </node>
+      <node id="economic_1" label="business_growth&#10;$50,000,000,000">
+        <attvalues>
+          <attvalue for="0" value="economic" />
+          <attvalue for="2" value="Grew Stark Industries into weapons manufacturing g" />
+        </attvalues>
+      </node>
+      <node id="economic_2" label="business_pivot&#10;$20,000,000,000">
+        <attvalues>
+          <attvalue for="0" value="economic" />
+          <attvalue for="2" value="Shut down weapons division, focused on clean energ" />
+        </attvalues>
+      </node>
+      <node id="economic_3" label="investment&#10;$3,000,000,000">
+        <attvalues>
+          <attvalue for="0" value="economic" />
+          <attvalue for="2" value="Invested in Stark Tower (now Avengers Tower)" />
+        </attvalues>
+      </node>
+      <node id="economic_4" label="expense&#10;$10,000,000,000">
+        <attvalues>
+          <attvalue for="0" value="economic" />
+          <attvalue for="2" value="Development of Iron Legion and Ultron project" />
+        </attvalues>
+      </node>
+      <node id="total_wealth" label="Total Wealth&#10;$12,400,000,000">
+        <attvalues>
+          <attvalue for="0" value="wealth" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge source="Tony Stark" target="Tony Stark_Earth-616" id="0">
+        <attvalues>
+          <attvalue for="3" value="exists_in" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="Tony Stark_Earth-199999 (MCU)" id="1">
+        <attvalues>
+          <attvalue for="3" value="exists_in" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="Tony Stark_Earth-1610 (Ultimate Universe)" id="2">
+        <attvalues>
+          <attvalue for="3" value="exists_in" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="domain_0_DomainCategory.ENGINEERING" id="3">
+        <attvalues>
+          <attvalue for="3" value="possesses" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="domain_1_DomainCategory.COMPUTER_SCIENCE" id="4">
+        <attvalues>
+          <attvalue for="3" value="possesses" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="domain_2_DomainCategory.BUSINESS" id="5">
+        <attvalues>
+          <attvalue for="3" value="possesses" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="domain_3_DomainCategory.TECHNOLOGY" id="6">
+        <attvalues>
+          <attvalue for="3" value="possesses" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="domain_4_DomainCategory.SECURITY" id="7">
+        <attvalues>
+          <attvalue for="3" value="possesses" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="economic_0" id="8">
+        <attvalues>
+          <attvalue for="3" value="participated_in" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="economic_1" id="9">
+        <attvalues>
+          <attvalue for="3" value="participated_in" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="economic_2" id="10">
+        <attvalues>
+          <attvalue for="3" value="participated_in" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="economic_3" id="11">
+        <attvalues>
+          <attvalue for="3" value="participated_in" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="economic_4" id="12">
+        <attvalues>
+          <attvalue for="3" value="participated_in" />
+        </attvalues>
+      </edge>
+      <edge source="Tony Stark" target="total_wealth" id="13">
+        <attvalues>
+          <attvalue for="3" value="possesses" />
+        </attvalues>
+      </edge>
+    </edges>
+  </graph>
+</gexf>
