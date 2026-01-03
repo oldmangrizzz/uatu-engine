@@ -80,6 +80,165 @@ class CharacterInfoAgent(BaseAgent):
         },
     }
 
+    # Known multiversal identities for major characters
+    # This provides provenance for the "constants vs variables" analysis
+    MULTIVERSAL_IDENTITIES: Dict[str, List[Dict[str, Any]]] = {
+        "anthony edward stark": [
+            {
+                "universe": "Earth-616",
+                "name": "Anthony Edward Stark",
+                "alias": "Iron Man",
+                "first_appearance": "Tales of Suspense #39 (March 1963)",
+                "key_characteristics": [
+                    "Genius inventor",
+                    "CEO of Stark Industries",
+                    "Founding Avenger",
+                ],
+                "source": "https://marvel.fandom.com/wiki/Anthony_Stark_(Earth-616)",
+            },
+            {
+                "universe": "Earth-199999 (MCU)",
+                "name": "Anthony Edward Stark",
+                "alias": "Iron Man",
+                "first_appearance": "Iron Man (2008 film)",
+                "key_characteristics": [
+                    "Genius billionaire philanthropist",
+                    "Created Iron Man armor in cave",
+                    "Sacrificed himself to defeat Thanos",
+                ],
+                "source": "https://marvelcinematicuniverse.fandom.com/wiki/Tony_Stark",
+            },
+            {
+                "universe": "Earth-1610 (Ultimate)",
+                "name": "Antonio Stark",
+                "alias": "Iron Man",
+                "first_appearance": "Ultimate Marvel Team-Up #4 (July 2001)",
+                "key_characteristics": [
+                    "Brain tumor survivor",
+                    "Armor integrated into body",
+                    "Member of Ultimates",
+                ],
+                "source": "https://marvel.fandom.com/wiki/Antonio_Stark_(Earth-1610)",
+            },
+            {
+                "universe": "Earth-3490",
+                "name": "Natasha Stark",
+                "alias": "Iron Woman",
+                "first_appearance": "Dark Reign: Fantastic Four #2 (May 2009)",
+                "key_characteristics": ["Female variant", "Married to Captain America"],
+                "source": "https://marvel.fandom.com/wiki/Natasha_Stark_(Earth-3490)",
+            },
+            {
+                "universe": "Earth-55921 (One World Under Doom)",
+                "name": "Anthony Edward Stark",
+                "alias": "The Iron Sellout",
+                "first_appearance": "One World Under Doom (2025)",
+                "key_characteristics": [
+                    "Insurgent saboteur",
+                    "Posing as Doom collaborator",
+                    "Analog 'Rust Bucket' doctrine",
+                ],
+                "source": "Marvel Comics - One World Under Doom storyline",
+            },
+        ],
+        "tony stark": [  # Mirror entry for alternate name lookup
+            {
+                "universe": "Earth-616",
+                "name": "Anthony Edward Stark",
+                "alias": "Iron Man",
+                "source": "https://marvel.fandom.com/wiki/Anthony_Stark_(Earth-616)",
+            },
+        ],
+        "peter parker": [
+            {
+                "universe": "Earth-616",
+                "name": "Peter Benjamin Parker",
+                "alias": "Spider-Man",
+                "first_appearance": "Amazing Fantasy #15 (August 1962)",
+                "key_characteristics": [
+                    "Bitten by radioactive spider",
+                    "Photographer",
+                    "Great power/responsibility",
+                ],
+                "source": "https://marvel.fandom.com/wiki/Peter_Parker_(Earth-616)",
+            },
+            {
+                "universe": "Earth-1610 (Ultimate)",
+                "name": "Peter Parker",
+                "alias": "Spider-Man",
+                "first_appearance": "Ultimate Spider-Man #1 (October 2000)",
+                "key_characteristics": [
+                    "Died heroically",
+                    "Younger version",
+                    "Mentored by Nick Fury",
+                ],
+                "source": "https://marvel.fandom.com/wiki/Peter_Parker_(Earth-1610)",
+            },
+            {
+                "universe": "Earth-199999 (MCU)",
+                "name": "Peter Parker",
+                "alias": "Spider-Man",
+                "first_appearance": "Captain America: Civil War (2016)",
+                "key_characteristics": [
+                    "Mentored by Tony Stark",
+                    "Identity erased from memory",
+                ],
+                "source": "https://marvelcinematicuniverse.fandom.com/wiki/Spider-Man",
+            },
+        ],
+        "steve rogers": [
+            {
+                "universe": "Earth-616",
+                "name": "Steven Grant Rogers",
+                "alias": "Captain America",
+                "first_appearance": "Captain America Comics #1 (March 1941)",
+                "key_characteristics": [
+                    "Super-Soldier Serum",
+                    "Frozen in ice",
+                    "Sentinel of Liberty",
+                ],
+                "source": "https://marvel.fandom.com/wiki/Steven_Rogers_(Earth-616)",
+            },
+            {
+                "universe": "Earth-199999 (MCU)",
+                "name": "Steven Grant Rogers",
+                "alias": "Captain America",
+                "first_appearance": "Captain America: The First Avenger (2011)",
+                "key_characteristics": [
+                    "Returned to past to live with Peggy",
+                    "Passed shield to Sam Wilson",
+                ],
+                "source": "https://marvelcinematicuniverse.fandom.com/wiki/Captain_America",
+            },
+        ],
+        "victor von doom": [
+            {
+                "universe": "Earth-616",
+                "name": "Victor Von Doom",
+                "alias": "Doctor Doom",
+                "first_appearance": "Fantastic Four #5 (July 1962)",
+                "key_characteristics": [
+                    "Ruler of Latveria",
+                    "Sorcerer and scientist",
+                    "Archenemy of Fantastic Four",
+                ],
+                "source": "https://marvel.fandom.com/wiki/Victor_von_Doom_(Earth-616)",
+            },
+            {
+                "universe": "Earth-616 (God Emperor)",
+                "name": "Victor Von Doom",
+                "alias": "God Emperor Doom",
+                "first_appearance": "Secret Wars (2015)",
+                "key_characteristics": [
+                    "Stole Beyonders' power",
+                    "Created Battleworld",
+                    "Defeated by Reed Richards",
+                ],
+                "source": "https://marvel.fandom.com/wiki/Victor_von_Doom_(Earth-616)#God_Emperor_Doom",
+            },
+        ],
+    }
+
     def __init__(self):
         super().__init__("character_info_agent")
         # Optimized wiki sources with keys matching CHARACTER_MAPPINGS
@@ -172,6 +331,22 @@ class CharacterInfoAgent(BaseAgent):
         occupations_list = list(set([o for o in occupations_list if o and o.strip()]))
         first_appearances = list(set([f for f in first_appearances if f and f.strip()]))
         sources_list = list(set(sources_list))
+
+        # Add known multiversal identities from our research database
+        # This provides documented provenance for alternate universe versions
+        known_identities = self.MULTIVERSAL_IDENTITIES.get(normalized_name, [])
+        if known_identities:
+            logger.info(
+                f"Adding {len(known_identities)} known multiversal identities for {character_name}"
+            )
+            for identity in known_identities:
+                # Check if this universe is already represented
+                existing_universes = {i.get("universe") for i in multiversal_identities}
+                if identity.get("universe") not in existing_universes:
+                    multiversal_identities.append(identity)
+                    # Add source for provenance
+                    if identity.get("source"):
+                        sources_list.append(identity["source"])
 
         if trait_sets:
             constants, variables = self._classify_traits(trait_sets)
