@@ -1,0 +1,36 @@
+archetype: ''
+communication_style: {}
+core_constants: []
+core_drive: ''
+created_at: ''
+digital_psyche_middleware:
+  emotion_engines:
+  - Joy
+  - Sorrow
+  - Fear
+  - Anger
+  - Desire
+  - Confusion
+  - Curiosity
+  homeostasis:
+    baseline: regulated
+    conflict_resolution: multi-agent_negotiation
+  identity:
+    archetype: ''
+    person: Agent
+  neurotransmitter_map:
+    cortisol: threat_detection
+    dopamine: anticipation_and_drive
+    serotonin: stability_and_harmony
+  oscillation_model: stark_resonance
+  reflection_protocol:
+    enabled: true
+    purpose:
+    - self-mod correction
+    - memory prep
+    - ethics alignment
+    trigger: inactivity window
+knowledge_domains: []
+primary_name: Agent
+prompts_directory: /Users/grizzmed/Stark/uatu-engine/agent_zero_framework/agents/agent/prompts
+tts_voice_manifest: /Users/grizzmed/Stark/uatu-engine/agent_zero_framework/agents/agent/tts_voice_manifest.json

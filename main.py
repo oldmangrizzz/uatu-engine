@@ -110,7 +110,7 @@ Examples:
         args.export = True
         args.graph = True
         args.instantiate = True
-        args.deploy = True
+        args.deploy = False  # Don't auto-deploy; prompt user interactively
         args.verbose = True
 
     if args.verbose or args.full:
@@ -320,20 +320,30 @@ async def run_swarm(args):
             print(f"   python {result['launch_script']}")
             print("=" * 80)
 
-            # Phase 3: Cloud Deployment (if requested)
-            if args.deploy:
-                print("\n" + "=" * 80)
-                print("☁️  Phase 3: Deploying to Cloud Infrastructure")
-                print("=" * 80)
+            # Phase 3: Cloud Deployment (interactive prompt)
+            print("\n" + "=" * 80)
+            print("☁️  Phase 3: Deployment Options")
+            print("=" * 80)
+            print("\nWhere would you like this digital person to live?")
+            print("  [1] Local only (Workshop) - Run from this machine")
+            print("  [2] HuggingFace Space - Container in the cloud")
+            print("  [3] Google Cloud (coming soon)")
+            print("  [4] Skip deployment for now")
+            print()
 
+            deploy_choice = input("Enter choice [1-4] (default: 1): ").strip() or "1"
+
+            if deploy_choice == "2":
+                print("\n☁️  Deploying to HuggingFace Space...")
                 from uatu_genesis_engine.deployment.cloud_deployer import CloudDeployer
                 import os
 
                 hf_token = os.environ.get("HF_TOKEN")
                 if not hf_token:
                     print(
-                        "❌ HF_TOKEN not found in environment. Skipping cloud deployment."
+                        "❌ HF_TOKEN not found in environment. Cannot deploy to HuggingFace."
                     )
+                    print("   Set HF_TOKEN in your .env file and try again.")
                 else:
                     try:
                         deployer = CloudDeployer(hf_token=hf_token)
@@ -359,6 +369,18 @@ async def run_swarm(args):
                             import traceback
 
                             traceback.print_exc()
+
+            elif deploy_choice == "3":
+                print("\n⏳ Google Cloud deployment is not yet implemented.")
+                print("   This feature is coming soon!")
+
+            elif deploy_choice == "4":
+                print("\n⏭️  Skipping deployment. Your persona is ready locally.")
+
+            else:
+                # Default to local (choice 1 or invalid input)
+                print("\n✅ Persona configured for local operation.")
+                print(f"   Launch with: python {result['launch_script']}")
 
         except Exception as e:
             logger.error(f"Error during instantiation: {e}", exc_info=args.verbose)
