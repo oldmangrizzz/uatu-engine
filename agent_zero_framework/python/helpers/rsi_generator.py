@@ -48,6 +48,15 @@ class RSIGenerator:
         """
         try:
             # Import here to avoid circular dependencies
+            # Handle both running from Agent Zero root and from external callers
+            import sys
+            from pathlib import Path
+
+            # Add agent_zero_framework to path if not already there
+            agent_zero_root = Path(__file__).parent.parent.parent
+            if str(agent_zero_root) not in sys.path:
+                sys.path.insert(0, str(agent_zero_root))
+
             from agent import AgentContext
             import models
 
