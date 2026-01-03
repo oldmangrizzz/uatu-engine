@@ -14,8 +14,52 @@ logger = logging.getLogger(__name__)
 class EconomicHistoryAgent(BaseAgent):
     """Agent specialized in gathering economic and financial history."""
 
+    # Canonical name mappings for known characters (mirrors CharacterInfoAgent)
+    CHARACTER_MAPPINGS: Dict[str, Dict[str, str]] = {
+        "anthony edward stark": {
+            "wikipedia": "Iron_Man",
+            "marvel_fandom": "Anthony_Stark_(Earth-616)",
+        },
+        "tony stark": {
+            "wikipedia": "Iron_Man",
+            "marvel_fandom": "Anthony_Stark_(Earth-616)",
+        },
+        "iron man": {
+            "wikipedia": "Iron_Man",
+            "marvel_fandom": "Anthony_Stark_(Earth-616)",
+        },
+        "steve rogers": {
+            "wikipedia": "Captain_America",
+            "marvel_fandom": "Steven_Rogers_(Earth-616)",
+        },
+        "peter parker": {
+            "wikipedia": "Spider-Man",
+            "marvel_fandom": "Peter_Parker_(Earth-616)",
+        },
+        "bruce banner": {
+            "wikipedia": "Hulk",
+            "marvel_fandom": "Bruce_Banner_(Earth-616)",
+        },
+        "victor von doom": {
+            "wikipedia": "Doctor_Doom",
+            "marvel_fandom": "Victor_von_Doom_(Earth-616)",
+        },
+    }
+
     def __init__(self):
         super().__init__("economic_history_agent")
+
+    def _get_canonical_names(self, character_name: str) -> Dict[str, str]:
+        """Get canonical wiki page names for a character."""
+        normalized = character_name.lower().strip()
+        if normalized in self.CHARACTER_MAPPINGS:
+            return self.CHARACTER_MAPPINGS[normalized]
+        # Fallback: use formatted name
+        formatted = character_name.replace(" ", "_")
+        return {
+            "wikipedia": formatted,
+            "marvel_fandom": f"{formatted}_(Earth-616)",
+        }
 
     async def execute(
         self, character_name: str, context: Dict[str, Any]
@@ -52,15 +96,14 @@ class EconomicHistoryAgent(BaseAgent):
             f"{character_name} assets",
         ]
 
-        # For demonstration, we'll search fictional character wealth databases
-        # Use proper URL encoding for safety
-        # Forbes Fictional 15 and wiki sources are more reliable than therichest.com
-        formatted_name = character_name.replace(" ", "_")
+        # Use canonical names for wiki lookups
+        canonical = self._get_canonical_names(character_name)
         wealth_urls = [
-            f"https://en.wikipedia.org/wiki/{formatted_name}",
-            f"https://marvel.fandom.com/wiki/{formatted_name}_(Earth-616)",
+            f"https://en.wikipedia.org/wiki/{canonical['wikipedia']}",
+            f"https://marvel.fandom.com/wiki/{canonical['marvel_fandom']}",
             f"https://www.cbr.com/?s={quote_plus(character_name)}+net+worth",
         ]
+        logger.info(f"Using canonical URLs: {wealth_urls[:2]}")
 
         for url in wealth_urls:
             html = await self.fetch_url(url)
