@@ -285,6 +285,128 @@ async def run_swarm(args):
         logger.info(f"Using existing soul anchor: {soul_anchor_file}")
         print(f"\n🔗 Loading soul anchor from: {soul_anchor_file}")
 
+    # Phase 1.5: Model Selection
+    model_config = None
+    if args.instantiate and soul_anchor_file:
+        print("\n" + "=" * 80)
+        print("🧠 Model Selection: Choose the LLM backbone for this digital person")
+        print("=" * 80)
+        print("\nAvailable model tiers (via OpenRouter):")
+        print()
+        print("  [1] Budget Tier (~$0.10-0.50/M tokens)")
+        print("      • google/gemma-2-9b-it")
+        print("      • meta-llama/llama-3.1-8b-instruct")
+        print("      • qwen/qwen-2.5-7b-instruct")
+        print()
+        print("  [2] Balanced Tier (~$0.50-2.00/M tokens) [RECOMMENDED]")
+        print("      • anthropic/claude-3-haiku")
+        print("      • google/gemini-2.0-flash-001")
+        print("      • deepseek/deepseek-chat-v3-0324")
+        print()
+        print("  [3] Premium Tier (~$3.00-15.00/M tokens)")
+        print("      • anthropic/claude-sonnet-4")
+        print("      • openai/gpt-4o")
+        print("      • google/gemini-2.5-pro-preview")
+        print()
+        print("  [4] GitHub Copilot (if you have Pro/Pro+)")
+        print("      • Uses your existing Copilot subscription")
+        print()
+        print("  [5] Custom - Enter your own OpenRouter model ID")
+        print()
+
+        tier_choice = input("Select tier [1-5] (default: 2): ").strip() or "2"
+
+        # Model options by tier
+        tier_models = {
+            "1": [
+                ("google/gemma-2-9b-it", "Gemma 2 9B - Google's efficient open model"),
+                ("meta-llama/llama-3.1-8b-instruct", "Llama 3.1 8B - Meta's workhorse"),
+                (
+                    "qwen/qwen-2.5-7b-instruct",
+                    "Qwen 2.5 7B - Alibaba's strong performer",
+                ),
+            ],
+            "2": [
+                (
+                    "anthropic/claude-3-haiku",
+                    "Claude 3 Haiku - Fast, smart, affordable",
+                ),
+                (
+                    "google/gemini-2.0-flash-001",
+                    "Gemini 2.0 Flash - Google's speed demon",
+                ),
+                ("deepseek/deepseek-chat-v3-0324", "DeepSeek V3 - Incredible value"),
+            ],
+            "3": [
+                ("anthropic/claude-sonnet-4", "Claude Sonnet 4 - Top-tier reasoning"),
+                ("openai/gpt-4o", "GPT-4o - OpenAI's flagship"),
+                ("google/gemini-2.5-pro-preview", "Gemini 2.5 Pro - Google's best"),
+            ],
+        }
+
+        if tier_choice == "4":
+            # GitHub Copilot
+            model_config = {
+                "provider": "github_copilot",
+                "model": "gpt-4o",  # Copilot uses GPT-4o under the hood
+                "display_name": "GitHub Copilot (GPT-4o)",
+            }
+            print(f"\n✅ Selected: GitHub Copilot")
+        elif tier_choice == "5":
+            # Custom model
+            custom_model = input(
+                "Enter OpenRouter model ID (e.g., 'anthropic/claude-3-opus'): "
+            ).strip()
+            if custom_model:
+                model_config = {
+                    "provider": "openrouter",
+                    "model": custom_model,
+                    "display_name": f"Custom: {custom_model}",
+                }
+                print(f"\n✅ Selected: {custom_model}")
+            else:
+                print("⚠️  No model entered, using default (Claude 3 Haiku)")
+                model_config = {
+                    "provider": "openrouter",
+                    "model": "anthropic/claude-3-haiku",
+                    "display_name": "Claude 3 Haiku",
+                }
+        elif tier_choice in tier_models:
+            # Show models in selected tier
+            models = tier_models[tier_choice]
+            print(f"\nModels in this tier:")
+            for i, (model_id, desc) in enumerate(models, 1):
+                print(f"  [{i}] {desc}")
+                print(f"      {model_id}")
+            print()
+
+            model_choice = (
+                input(f"Select model [1-{len(models)}] (default: 1): ").strip() or "1"
+            )
+            try:
+                idx = int(model_choice) - 1
+                if 0 <= idx < len(models):
+                    selected = models[idx]
+                else:
+                    selected = models[0]
+            except ValueError:
+                selected = models[0]
+
+            model_config = {
+                "provider": "openrouter",
+                "model": selected[0],
+                "display_name": selected[1].split(" - ")[0],
+            }
+            print(f"\n✅ Selected: {selected[0]}")
+        else:
+            # Default to balanced tier, first option
+            model_config = {
+                "provider": "openrouter",
+                "model": "anthropic/claude-3-haiku",
+                "display_name": "Claude 3 Haiku",
+            }
+            print(f"\n✅ Using default: anthropic/claude-3-haiku")
+
     # Phase 2: Instantiate in Agent Zero (if requested)
     if args.instantiate and soul_anchor_file:
         print("\n" + "=" * 80)
@@ -308,7 +430,7 @@ async def run_swarm(args):
             # Instantiate in Agent Zero
             print(f"🚀 Instantiating {loader.get_primary_name()} in Agent Zero...")
             instantiator = AgentInstantiator(anchor_data)
-            result = instantiator.instantiate(transformer)
+            result = instantiator.instantiate(transformer, model_config=model_config)
 
             print("\n" + "=" * 80)
             print(f"✅ INSTANTIATION COMPLETE: {result['persona_name']}")

@@ -194,6 +194,14 @@ class AgentInstantiator:
             "tts_voice_manifest": str(tts_manifest_path),
         }
 
+        # Add LLM model configuration if provided
+        if hasattr(self, "_model_config") and self._model_config:
+            config_data["llm_config"] = {
+                "provider": self._model_config.get("provider", "openrouter"),
+                "model": self._model_config.get("model", "anthropic/claude-3-haiku"),
+                "display_name": self._model_config.get("display_name", "Default Model"),
+            }
+
         with open(config_file, "w", encoding="utf-8") as f:
             yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
 
@@ -252,17 +260,28 @@ class AgentInstantiator:
         logger.info(f"Created launch script: {script_path}")
         return script_path
 
-    def instantiate(self, transformer: "PersonaTransformer") -> Dict[str, Any]:
+    def instantiate(
+        self,
+        transformer: "PersonaTransformer",
+        model_config: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """
         Complete instantiation of the persona in Agent Zero.
 
         Args:
             transformer: PersonaTransformer instance
+            model_config: Optional dictionary with LLM configuration:
+                - provider: The LLM provider (e.g., "openrouter", "github_copilot")
+                - model: The model ID (e.g., "anthropic/claude-3-haiku")
+                - display_name: Human-readable name for the model
 
         Returns:
             Dictionary with paths and configuration info
         """
         logger.info(f"Starting full instantiation for {self.primary_name}")
+
+        # Store model config for use in persona config
+        self._model_config = model_config
 
         # Setup all components
         prompt_files = self.setup_persona_prompts(transformer)
